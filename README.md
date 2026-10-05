@@ -76,7 +76,7 @@ Tot raportul de curățare e vizibil în pagină („**Ce am curățat**” → 
 | **`data`** | `knowledge-work-plugins` | `/data:explore-data` pe `vanzari_2026.csv` și `/data:validate-data` pe `vanzari_enterprise_b2b_2026.csv`: catalogul de murdării și **cifrele de referință** pe care le verifică testele (`docs/`) |
 | **`impeccable`** | `impeccable` | auditul de design și accesibilitate de mai sus și reparațiile din `frontend/` |
 
-**Alte unelte (nu sunt plugin-uri):** Claude (Cowork) a scris codul. **Designer agent**-ul primit (`tema_primita/designer_agent..md`, stilul „Corporate Trust”) a dat direcția vizuală, adaptată în `DESIGN.md`. Skill-ul **dataviz** a validat paleta graficelor (inclusiv pentru daltonism).
+**Alte unelte (nu sunt plugin-uri):** Claude (Cowork) a scris codul. **Designer agent**-ul folosit ca referință (`materiale-referinta/designer_agent..md`, stilul „Corporate Trust”) a dat direcția vizuală, adaptată în `DESIGN.md`. Skill-ul **dataviz** a validat paleta graficelor (inclusiv pentru daltonism).
 **Nefolosite:** `/data:create-viz` (graficele sunt SVG scrise direct în cod) și `typescript-lsp` (verificarea de tipuri s-a făcut cu `deno check`).
 
 ## Structura proiectului
@@ -93,9 +93,9 @@ backend/core/aggregate.ts cele 6 dashboard-uri
 backend/core/ask.ts       întrebare → plan → validare → plasa de siguranță → calcul
 frontend/                 pagina, stilurile, graficele SVG
 tests/core_test.ts        cele 10 teste
-examples/                 cele 4 CSV-uri din temă
+examples/                 cele 4 seturi de date demo
 PLAN.md · CLAUDE.md · DESIGN.md · docs/
-tema_primita/             punctul de plecare: TASK.md, PLUGINURI.md, designer_agent..md și cele 4 CSV-uri originale
+materiale-referinta/      brief-ul inițial, lista de plugin-uri, sistemul de design folosit ca referință și seturile de date demo originale
 ```
 
 **Rulare locală:** `deno task dev` → http://localhost:8787 (fără model, doar reguli) · **Teste:** `deno task test`

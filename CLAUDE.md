@@ -1,6 +1,6 @@
-# CLAUDE.md — Dashboard din CSV (temă Vibe Coding, stepIT)
+# CLAUDE.md — Dashboard din CSV (Claritate)
 
-Scris înainte de cod. Citește-l la începutul fiecărei sesiuni. Detaliile de design sunt în `DESIGN.md`, planul pe piese în `PLAN.md`, cerința originală în `TASK.md`, plugin-urile în `PLUGINURI.md`.
+Scris înainte de cod. Citește-l la începutul fiecărei sesiuni. Detaliile de design sunt în `DESIGN.md`, planul pe piese în `PLAN.md`, cerința inițială în `materiale-referinta/brief.md`, plugin-urile în `materiale-referinta/PLUGINURI.md`.
 
 ## Ce construim
 
@@ -9,18 +9,18 @@ O aplicație web publică (merge și pe telefon) în care urci un CSV și prime�
 2. **6 dashboard-uri** cu cifre cheie, tabele și grafice;
 3. un câmp în care pui o întrebare în română despre date și primești răspuns.
 
-## Reguli din temă (nenegociabile)
+## Cerințe de produs (nenegociabile)
 
 - **Trebuie să meargă cu orice CSV**, nu doar cu cele 4 din folder. Coloanele pot fi în orice ordine și pot lipsi.
 - **Nu se blochează pe date murdare**: rânduri goale, sume scrise ca text, același nume scris în trei feluri, rânduri de total intercalate.
 - **Modelul nu calculează numere.** El alege *ce* se calculează; codul face aritmetica.
-- Se predau: `PLAN.md` (10 rânduri, scris înainte de cod) + linkul aplicației.
+- Livrabile: `PLAN.md` (10 rânduri, scris înainte de cod) + linkul aplicației.
 
-## Decizii luate (cu utilizatoarea)
+## Decizii de produs
 
 | Decizie | Ce am ales | De ce |
 |---|---|---|
-| Hosting | **Val Town** (cont gratuit) | Cerut de temă; server + SQLite + link public, fără Netlify (fără credite acolo). |
+| Hosting | **Val Town** (cont gratuit) | Alegere inițială; server + SQLite + link public, fără Netlify (fără credite acolo). |
 | Întrebări în română | **`std/openai` din Val Town**, fără cheie API proprie | Val Town oferă gratuit modele mici (ex. `gpt-5.4-nano`) fără cheie. Respectă „modelul alege, codul calculează”. |
 | Denumiri | **Venit livrat / Venit pierdut** | CSV-urile nu au costuri, deci nu există „profit” sau „pierdere” contabilă. „Pierdut” = Retur + Anulată. |
 | Chei API | **Niciuna în cod sau în repo** | Nu avem nevoie; `std/openai` se autentifică prin contul Val Town. |
@@ -49,7 +49,7 @@ frontend/index.html         pagina (upload, dashboard-uri, întrebări)
 frontend/app.js             UI + grafice SVG (textContent peste tot, niciun innerHTML cu date)
 frontend/styles.css         token-uri din DESIGN.md
 tests/core_test.ts          8 teste Deno: cifrele de referință, CSV sintetic murdar, plan invalid
-examples/                   cele 4 CSV-uri din temă, servite ca „încearcă un exemplu”
+examples/                   cele 4 seturi de date demo, servite ca „încearcă un exemplu”
 ```
 
 Rute: `GET /` (pagina), `POST /api/upload` (multipart, max 5 MB), `GET /api/d/:id` (rezultatul unui upload), `POST /api/d/:id/ask` (întrebare), `GET /d/:id` (link de partajat către un dashboard), `GET /examples/:name`, `POST /api/d/:id/roles` (corectarea manuală a rolului unei coloane).
@@ -158,8 +158,8 @@ Codul îl scrie Claude (Cowork) în acest folder; plugin-urile rulează în **Cl
 ## Definiția de „gata”
 
 - [x] Link public Val Town, merge pe telefon (375px, fără scroll orizontal) — https://claritate.val.run
-- [x] Cele 4 CSV-uri din temă + 1 CSV murdar inventat (`;`, format EN, fără status, coloane lipsă) dau dashboard-uri corecte, fără erori
+- [x] Cele 4 seturi de date demo + 1 CSV murdar inventat (`;`, format EN, fără status, coloane lipsă) dau dashboard-uri corecte, fără erori
 - [x] Totalurile verificate independent (script separat) pe cel puțin 2 fișiere — `tests/core_test.ts` compară cu `docs/`
 - [x] Nicio cifră din răspunsuri nu vine de la model (modelul întoarce doar un plan JSON; testat și cu un plan invalid)
 - [x] Impeccable rulat, problemele reale reparate (15/20 înainte; ținte 44px, contrast AA, titluri h1→h2)
-- [x] `README.md` (prezentare + plugin-uri) · [x] mesajul pentru profesor
+- [x] `README.md` (prezentare + plugin-uri)
