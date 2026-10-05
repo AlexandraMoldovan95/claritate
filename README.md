@@ -5,6 +5,8 @@
 
 Urci un CSV cu vânzări și aplicația îl **citește**, îi **detectează coloanele**, îl **curăță** și îți arată **6 dashboard-uri** cu cifre, grafice și tabele. Poți pune și **întrebări în română** despre date. Modelul AI alege doar **ce** se calculează. **Toate cifrele le calculează codul.**
 
+> **Proiect demo de portofoliu** — gândit, construit și testat ca un produs live, livrabil unui client real. Secțiunile „Testare și calitate” și „Cum a fost construit” de mai jos arată procesul din spate, pentru cine vrea să vadă cum a luat naștere.
+
 ---
 
 ## Cum se folosește
@@ -68,7 +70,7 @@ Tot raportul de curățare e vizibil în pagină („**Ce am curățat**” → 
 - **Teste live** pe https://claritate.val.run, cu logurile Val Town: planul întors de model și, când e cazul, corecția.
 - **Audit Impeccable** (desktop 1280px și telefon 375px): scor inițial 15/20. Corectate: ținte de atins sub **44px**, **contrast** sub AA, numele lung de fișier rupt urât pe telefon și **ordinea titlurilor** (h1 → h2). După corecții: fără scroll orizontal, fără contrast slab, fără ținte prea mici (în afară de barele graficului pe telefon, care au alternativă în tabel).
 
-## Plugin-uri folosite
+## Cum a fost construit
 
 | Plugin | Marketplace | Ce a făcut concret |
 |---|---|---|
