@@ -141,11 +141,11 @@ Reguli pentru dashboard-ul 4:
 
 ## Design
 
-Stilul „**Corporate Trust**” din `designer_agent..md`, adaptat pentru HTML/CSS vanilla în `DESIGN.md`. Mobil întâi (375px), fără scroll orizontal, ținte tactile ≥ 44px, contrast WCAG AA, `prefers-reduced-motion` respectat.
+Stilul „**Corporate Trust**” din `materiale-referinta/design-system.md`, adaptat pentru HTML/CSS vanilla în `DESIGN.md`. Mobil întâi (375px), fără scroll orizontal, ținte tactile ≥ 44px, contrast WCAG AA, `prefers-reduced-motion` respectat.
 
 ## Plugin-uri — cine ce folosește
 
-Codul îl scrie Claude (Cowork) în acest folder; plugin-urile rulează în **Claude Code**, pe calculatorul utilizatoarei.
+Codul e scris cu Claude (Cowork) în acest folder; plugin-urile rulează local, în **Claude Code**.
 
 | Plugin | Marketplace | Pentru ce |
 |---|---|---|

@@ -25,7 +25,7 @@ Urci un CSV cu vânzări și aplicația îl **citește**, îi **detectează colo
 | 5 | **Top clienți și produse** | după venit livrat, cu **ponderea** din total și avertisment pentru ID-uri duplicate |
 | 6 | **Sănătatea comenzilor** | rata de livrare, retur, anulare și **banii blocați „În curs”** |
 
-Am ales „**venit livrat / venit pierdut**”, nu „profit / pierdere”: fișierele nu au costuri, deci profitul nu se poate calcula corect. Dacă lipsește o coloană (de exemplu **statusul**), dashboard-ul spune explicit ce lipsește, în loc să inventeze.
+Aplicația folosește „**venit livrat / venit pierdut**”, nu „profit / pierdere”: fișierele nu au costuri, deci profitul nu se poate calcula corect. Dacă lipsește o coloană (de exemplu **statusul**), dashboard-ul spune explicit ce lipsește, în loc să inventeze.
 
 ## Date murdare: ce găsește și ce face
 
@@ -62,11 +62,11 @@ Tot raportul de curățare e vizibil în pagină („**Ce am curățat**” → 
 - **Orice CSV:** modelul vede și **numele real** al coloanei numerice (ex. „Nota”, „Suma”), deci întrebările merg și pe fișiere care nu sunt de vânzări. Dacă modelul spune „nu se poate”, dar regulile înțeleg întrebarea, răspund regulile.
 - **Fără cheie API:** modelul e cel gratuit din Val Town (`std/openai`). Dacă nu răspunde (limita e 10 cereri pe minut), întrebarea trece automat pe un **planificator pe reguli**, care merge și fără model.
 
-## Cum am verificat
+## Testare și calitate
 
 - **10 teste automate** (`deno task test`): cifrele de pe 2 fișiere comparate **la ban** cu rapoartele independente făcute cu pluginul `data` (în `docs/`), un **CSV sintetic murdar** (`;`, numere englezești, fără status, coloane în altă ordine), fișiere invalide, un plan „rău” de la model care trebuie respins, planurile greșite văzute live și un CSV care **nu e de vânzări** (note școlare).
 - **Teste live** pe https://claritate.val.run, cu logurile Val Town: planul întors de model și, când e cazul, corecția.
-- **Audit Impeccable** (desktop 1280px și telefon 375px), înainte de reparații **15/20**. Am reparat: ținte de atins sub **44px**, **contrast** sub AA, numele lung de fișier rupt urât pe telefon și **ordinea titlurilor** (h1 → h2). După reparații: fără scroll orizontal, fără contrast slab, fără ținte prea mici (în afară de barele graficului pe telefon, care au alternativă în tabel).
+- **Audit Impeccable** (desktop 1280px și telefon 375px): scor inițial 15/20. Corectate: ținte de atins sub **44px**, **contrast** sub AA, numele lung de fișier rupt urât pe telefon și **ordinea titlurilor** (h1 → h2). După corecții: fără scroll orizontal, fără contrast slab, fără ținte prea mici (în afară de barele graficului pe telefon, care au alternativă în tabel).
 
 ## Plugin-uri folosite
 
@@ -76,7 +76,7 @@ Tot raportul de curățare e vizibil în pagină („**Ce am curățat**” → 
 | **`data`** | `knowledge-work-plugins` | `/data:explore-data` pe `vanzari_2026.csv` și `/data:validate-data` pe `vanzari_enterprise_b2b_2026.csv`: catalogul de murdării și **cifrele de referință** pe care le verifică testele (`docs/`) |
 | **`impeccable`** | `impeccable` | auditul de design și accesibilitate de mai sus și reparațiile din `frontend/` |
 
-**Alte unelte (nu sunt plugin-uri):** Claude (Cowork) a scris codul. **Designer agent**-ul folosit ca referință (`materiale-referinta/designer_agent..md`, stilul „Corporate Trust”) a dat direcția vizuală, adaptată în `DESIGN.md`. Skill-ul **dataviz** a validat paleta graficelor (inclusiv pentru daltonism).
+**Alte unelte (nu sunt plugin-uri):** Claude (Cowork) a scris codul. **Designer agent**-ul folosit ca referință (`materiale-referinta/design-system.md`, stilul „Corporate Trust”) a dat direcția vizuală, adaptată în `DESIGN.md`. Skill-ul **dataviz** a validat paleta graficelor (inclusiv pentru daltonism).
 **Nefolosite:** `/data:create-viz` (graficele sunt SVG scrise direct în cod) și `typescript-lsp` (verificarea de tipuri s-a făcut cu `deno check`).
 
 ## Structura proiectului

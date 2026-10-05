@@ -1,6 +1,6 @@
 # DESIGN.md — „Corporate Trust”, adaptat pentru dashboard
 
-Sursa: `designer_agent..md` (design system „Corporate Trust”). Acolo e scris pentru React + Tailwind și pentru o pagină de prezentare; aici e tradus în **CSS vanilla** (fără build step, servit de Val Town) și adaptat pentru o **aplicație de date**, unde cifrele și graficele trebuie să rămână cele mai vizibile lucruri de pe ecran.
+Sursa: `materiale-referinta/design-system.md` (design system „Corporate Trust”). Acolo e scris pentru React + Tailwind și pentru o pagină de prezentare; aici e tradus în **CSS vanilla** (fără build step, servit de Val Town) și adaptat pentru o **aplicație de date**, unde cifrele și graficele trebuie să rămână cele mai vizibile lucruri de pe ecran.
 
 ## Principiu
 
