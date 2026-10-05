@@ -1,0 +1,10 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Impeccable plugin cache (local file paths, not meant for the public repo)
+.impeccable/
+frontend/.impeccable/

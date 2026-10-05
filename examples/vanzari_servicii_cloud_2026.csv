@@ -1,0 +1,72 @@
+EXPORT FACTURARE SERVICII CLOUD — sistem intern
+Perioada: 01.01.2026 - 30.09.2026
+Generat automat la 21.09.2026 17:40. NU MODIFICATI ACEST FISIER.
+
+Data,Nr comanda,Status,Client,Produs,Valuta,Pret unitar,Cantitate
+19.04.2026,CMD-300001, Retur,Fortuna Impex,Consultanta Arhitectura IT,RON,"3.722,64",4
+10.01.2026,CMD-300002,ANULATA, Optic Fiber Net ,Suport SLA 4h,EUR,"817,37",2
+22.04.2026,CMD-300003,Livrata,Kronstadt Industrie,Consultanta Arhitectura IT,RON,"2.159,71",5
+14.04.2026,CMD-300004, In curs,Fortuna Impex,Migrare Date Legacy,EUR,"932,55",5
+11.01.2026,CMD-300005,Livrata,Dacia Fleet Management,Modul BI & Raportare,RON,"2.280,75",4
+12.03.2026,CMD-300006,IN CURS,Dacia Fleet Management,Suport SLA 4h,RON,"4.571,64",4
+10.03.2026,CMD-300007,RETUR,Orion Cloud Services,Pachet Startup Cloud,RON,"441,13",3
+15.01.2026,CMD-300008,RETUR,Banat Construct SRL,Pachet Startup Cloud,RON,"710,71",10
+03.02.2026,CMD-300009, Retur,Optic Fiber Net,Licenta Workstation,RON,"2.961,92",3
+07.07.2026,CMD-300010,Retur,Orion Cloud Services,Licenta Workstation,RON,"4.467,19",1
+27.06.2026,CMD-300011,LIVRATA,Dacia Fleet Management,Modul BI & Raportare,RON,"3.055,49",10
+02.07.2026,CMD-300012,IN CURS,Avangarde Design,Modul BI & Raportare,EUR,"359,22",10
+23.06.2026,CMD-300013,LIVRATA,fortuna impex,Suport SLA 4h,EUR,"789,21",1
+25.04.2026,CMD-300014,RETUR,Fortuna Impex,Migrare Date Legacy,RON,"2.561,77",4
+TOTAL PARTIAL,,,,,RON,"126.362,99",
+15.03.2026,CMD-300016,Livrata ,Optic Fiber Net,Workshop Automatizare,RON,"3.541,20",5
+28.03.2026,CMD-300017,RETUR, Crisana IT Solutions ,Workshop Automatizare,EUR,"560,71",2
+12.04.2026,CMD-300018,Livrata ,fortuna impex,Suport SLA 4h,RON,"1.780,58",1
+,,,,,,, 
+02.04.2026,CMD-300020,LIVRATA,Avangarde Design,Licenta Workstation,RON,"4.556,93",8
+07.03.2026,CMD-300021,Anulata,Helios Pharma,Consultanta Arhitectura IT,RON,"2.417,04",5
+09.01.2026,CMD-300022, In curs,Orion Cloud Services,Consultanta Arhitectura IT,RON,"1.847,02",2
+20.05.2026,CMD-300023,Livrata ,Fortuna Impex,Suport SLA 4h,RON,"1.387,89",3
+05.03.2026,CMD-300024, Retur,Orion Cloud Services,Migrare Date Legacy,RON,"2.386,05",2
+04.06.2026,CMD-300025,Livrata,Kronstadt Industrie,Consultanta Arhitectura IT,RON,"959,79",2
+05.07.2026,CMD-300026,livrata,kronstadt industrie,Pachet Startup Cloud,RON,"3.383,91",1
+17.06.2026,CMD-300027,In curs,sarmis security sa,Pachet Startup Cloud,RON,"2.360,38",10
+21.02.2026,CMD-300028,RETUR,Banat Construct SRL,Modul BI & Raportare,RON,"466,70",1
+29.06.2026,CMD-300029,Anulata,Banat Construct SRL,Licenta Workstation,EUR,"152,20",1
+21.04.2026,CMD-300030,Retur,Optic Fiber Net,Optimizare Baze de Date,EUR,"314,10",5
+24.04.2026,CMD-300031,LIVRATA, Avangarde Design ,Modul BI & Raportare,RON,"1.358,54",2
+14.02.2026,CMD-300032,Livrata , Crisana IT Solutions ,Pachet Startup Cloud,RON,"2.899,04",4
+TOTAL PARTIAL,,,,,RON,"127.188,38",
+13.01.2026,CMD-300034,Anulata,Crisana IT Solutions,Workshop Automatizare,RON,"4.443,90",1
+26.07.2026,CMD-300035,livrata,Atlas Maritim,Consultanta Arhitectura IT,RON,"1.172,11",4
+25.08.2026,CMD-300036,anulata, Avangarde Design ,Migrare Date Legacy,RON,"3.977,44",2
+19.03.2026,CMD-300037,in curs,sarmis security sa,Licenta Workstation,EUR,"497,93",4
+27.04.2026,CMD-300038,RETUR,Orion Cloud Services,Suport SLA 4h,RON,"547,41",10
+,,,,,,, 
+07.08.2026,CMD-300040,in curs, Optic Fiber Net ,Licenta Workstation,RON,"3.659,34",10
+17.05.2026,CMD-300041,IN CURS,Atlas Maritim,Optimizare Baze de Date,EUR,"470,36",5
+31.03.2026,CMD-300042,IN CURS,Fortuna Impex,Suport SLA 4h,RON,"1.468,86",4
+01.08.2026,CMD-300043,Anulata,kronstadt industrie,Modul BI & Raportare,RON,"662,51",3
+18.04.2026,CMD-300044,Retur, Kronstadt Industrie ,Workshop Automatizare,RON,"2.546,30",4
+17.07.2026,CMD-300045,in curs,Sarmis Security SA,Consultanta Arhitectura IT,RON,"4.461,51",2
+18.08.2026,CMD-300003,IN CURS, Helios Pharma ,Consultanta Arhitectura IT,RON,"184,00",1
+28.01.2026,CMD-300047,anulata,Crisana IT Solutions,Workshop Automatizare,RON,"840,58",1
+07.07.2026,CMD-300048,IN CURS,Avangarde Design,Workshop Automatizare,RON,"2.699,92",5
+22.02.2026,CMD-300049,In curs,Optic Fiber Net,Modul BI & Raportare,EUR,"818,24",2
+TOTAL PARTIAL,,,,,RON,"106.630,09",
+01.09.2026,CMD-300051,ANULATA, Kronstadt Industrie ,Licenta Workstation,RON,"3.208,52",10
+12.02.2026,CMD-300052, Retur,Sarmis Security SA,Optimizare Baze de Date,EUR,"831,99",5
+07.03.2026,CMD-300053,anulata,Optic Fiber Net,Optimizare Baze de Date,RON,"2.333,53",1
+31.07.2026,CMD-300054,Retur,Dacia Fleet Management,Migrare Date Legacy,EUR,"159,25",5
+30.03.2026,CMD-300055,RETUR,Orion Cloud Services,Workshop Automatizare,RON,"2.038,70",1
+,,,,,,, 
+13.02.2026,CMD-300057,ANULATA,Orion Cloud Services,Suport SLA 4h,RON,"3.161,24",10
+30.03.2026,CMD-300058,LIVRATA,Atlas Maritim,Suport SLA 4h,EUR,"77,49",5
+06.03.2026,CMD-300059,RETUR,Atlas Maritim,Consultanta Arhitectura IT,RON,"580,71",1
+04.07.2026,CMD-300060,In curs,Orion Cloud Services,Pachet Startup Cloud,RON,"382,64",1
+10.04.2026,CMD-300061,livrata,dacia fleet management,Optimizare Baze de Date,RON,"962,67",10
+25.01.2026,CMD-300062,in curs,Optic Fiber Net,Consultanta Arhitectura IT,EUR,"174,52",5
+17.06.2026,CMD-300063,in curs,Avangarde Design,Workshop Automatizare,RON,"859,33",2
+03.04.2026,CMD-300064,IN CURS,Optic Fiber Net,Licenta Workstation,EUR,"225,29",5
+11.08.2026,CMD-300065, Retur,sarmis security sa,Optimizare Baze de Date,RON,"1.504,68",10
+,,,,,,, 
+TOTAL GENERAL,,,,,RON,"389.235,38",

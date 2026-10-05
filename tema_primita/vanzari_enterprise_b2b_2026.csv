@@ -1,0 +1,82 @@
+EXPORT COMENZI B2B ENTERPRISE — sistem intern
+Perioada: 01.01.2026 - 30.09.2026
+Generat automat la 21.09.2026 17:40. NU MODIFICATI ACEST FISIER.
+
+Nr comanda,Status,Client,Produs,Cantitate,Valuta,Pret unitar,Data
+CMD-400001,anulata, Med Expert Clinic ,Abonament Platforma B2B,10,RON,"4.017,69",05.08.2026
+CMD-400002,Anulata,Quantum Dynamics SRL,Audit Conformitate GDPR,10,RON,"3.656,10",19.03.2026
+CMD-400003,In curs,Med Expert Clinic,Abonament Platforma B2B,2,EUR,"75,19",22.06.2026
+CMD-400004,livrata,carpati food distribution,Pachet Securitate Endpoint,3,RON,"942,00",11.07.2026
+CMD-400005,in curs,Delta Express Curier,Pachet Securitate Endpoint,1,RON,"3.979,55",25.07.2026
+CMD-400006, Livrata,Global Spedition SRL,Modul CRM Avansat,5,EUR,"172,39",30.07.2026
+CMD-400007, In curs,Med Expert Clinic,Suport Dedicat VIP,1,EUR,"57,60",13.08.2026
+CMD-400008,In curs,Sirius Retail Group,Pachet Securitate Endpoint,10,RON,"3.108,41",05.02.2026
+CMD-400009,ANULATA, Med Expert Clinic ,Suport Dedicat VIP,10,RON,"415,86",01.02.2026
+CMD-400010,in curs,Terra Terra Construct,Instalare & Configurare On-Prem,1,EUR,"320,45",03.05.2026
+CMD-400011, Retur,Proiect Expert Consult,Custom Connector ERP,5,RON,"4.563,10",03.02.2026
+CMD-400012,Livrata ,Vectra Industrial,Custom Connector ERP,1,EUR,"602,17",23.05.2026
+CMD-400013, In curs,Terra Terra Construct,Audit Conformitate GDPR,3,RON,"3.328,98",13.01.2026
+CMD-400014,LIVRATA,Med Expert Clinic,Audit Conformitate GDPR,1,EUR,"790,89",23.08.2026
+TOTAL PARTIAL,,,,,RON,"154.372,03",
+CMD-400016,livrata,Quantum Dynamics SRL,Abonament Platforma B2B,1,EUR,"265,43",23.06.2026
+CMD-400017,In curs,Smart Data Analytics,Audit Conformitate GDPR,10,RON,"4.190,17",25.07.2026
+CMD-400018,Anulata,Carpati Food Distribution,Pachet Securitate Endpoint,1,EUR,"533,89",22.07.2026
+,,,,,,, 
+CMD-400020,In curs, Proiect Expert Consult ,Abonament Platforma B2B,3,EUR,"260,33",18.02.2026
+CMD-400021,in curs,Carpati Food Distribution,Custom Connector ERP,8,RON,"417,45",09.01.2026
+CMD-400022,ANULATA,Oltenia Power SA,Audit Conformitate GDPR,10,RON,"3.785,50",23.07.2026
+CMD-400023,IN CURS,Delta Express Curier,Abonament Platforma B2B,1,EUR,"811,81",22.06.2026
+CMD-400024,livrata,Proiect Expert Consult,Modul CRM Avansat,1,RON,"814,20",29.06.2026
+CMD-400025,in curs,Smart Data Analytics,Suport Dedicat VIP,4,EUR,"525,15",16.03.2026
+CMD-400026,in curs,Smart Data Analytics,Modul CRM Avansat,8,RON,"1.126,31",14.05.2026
+CMD-400027,In curs,Quantum Dynamics SRL,Custom Connector ERP,4,RON,"1.582,73",20.08.2026
+CMD-400028,IN CURS,Global Spedition SRL,Training Utilizatori Finali,1,RON,"519,51",24.06.2026
+CMD-400029,RETUR,Terra Terra Construct,Abonament Platforma B2B,10,EUR,"553,32",29.01.2026
+CMD-400030,In curs,Vectra Industrial,Custom Connector ERP,1,EUR,"588,37",05.02.2026
+CMD-400031, In curs,Smart Data Analytics,Training Utilizatori Finali,2,EUR,"361,85",31.01.2026
+CMD-400032,Retur,Proiect Expert Consult,Custom Connector ERP,8,EUR,"785,68",09.04.2026
+TOTAL PARTIAL,,,,,RON,"117.394,84",
+CMD-400034,Livrata ,Med Expert Clinic,Pachet Securitate Endpoint,1,RON,"3.408,63",26.06.2026
+CMD-400035, Retur,Oltenia Power SA,Instalare & Configurare On-Prem,10,RON,"445,66",28.08.2026
+CMD-400036,In curs,muntenia telecom,Audit Conformitate GDPR,4,RON,"1.715,39",16.06.2026
+CMD-400037,Livrata,Terra Terra Construct,Modul CRM Avansat,1,RON,"3.650,76",25.03.2026
+CMD-400038,Anulata,Proiect Expert Consult,Training Utilizatori Finali,10,RON,"1.398,42",26.06.2026
+,,,,,,, 
+CMD-400040,IN CURS,Proiect Expert Consult,Training Utilizatori Finali,8,RON,"332,55",16.05.2026
+CMD-400041,Livrata ,muntenia telecom,Pachet Securitate Endpoint,2,EUR,"736,57",07.06.2026
+CMD-400042, Livrata,proiect expert consult,Custom Connector ERP,1,RON,"2.612,49",29.03.2026
+CMD-400043,Livrata,Delta Express Curier,Modul CRM Avansat,4,EUR,"83,28",13.05.2026
+CMD-400044,In curs,Proiect Expert Consult,Custom Connector ERP,4,RON,"2.015,55",02.05.2026
+CMD-400045,IN CURS,Smart Data Analytics,Suport Dedicat VIP,1,RON,"615,44",17.02.2026
+CMD-400003,LIVRATA,Vectra Industrial,Pachet Securitate Endpoint,3,RON,"3.766,27",04.06.2026
+CMD-400047,RETUR,med expert clinic,Audit Conformitate GDPR,3,RON,"4.604,49",15.05.2026
+CMD-400048,RETUR,Carpati Food Distribution,Audit Conformitate GDPR,1,RON,"3.677,81",01.08.2026
+CMD-400049,anulata,Carpati Food Distribution,Training Utilizatori Finali,10,EUR,"451,26",24.01.2026
+TOTAL PARTIAL,,,,,RON,"81.421,23",
+CMD-400051,in curs,Smart Data Analytics,Suport Dedicat VIP,3,RON,"439,58",18.08.2026
+CMD-400052,Livrata,Global Spedition SRL,Suport Dedicat VIP,8,RON,"2.280,95",15.06.2026
+CMD-400053,Retur, Oltenia Power SA ,Modul CRM Avansat,10,RON,"1.919,38",19.01.2026
+CMD-400054,Livrata,Terra Terra Construct,Audit Conformitate GDPR,3,RON,"2.466,40",26.05.2026
+CMD-400055, Retur,Proiect Expert Consult,Modul CRM Avansat,8,RON,"303,19",30.04.2026
+,,,,,,, 
+CMD-400057,Anulata,Sirius Retail Group,Suport Dedicat VIP,3,EUR,"395,61",27.04.2026
+CMD-400058,IN CURS,Med Expert Clinic,Suport Dedicat VIP,1,RON,"2.731,27",01.04.2026
+CMD-400059,anulata,Global Spedition SRL,Instalare & Configurare On-Prem,3,RON,"3.225,70",18.03.2026
+CMD-400060,Livrata ,Global Spedition SRL,Custom Connector ERP,1,RON,"4.509,85",04.04.2026
+CMD-400061, In curs,Vectra Industrial,Instalare & Configurare On-Prem,8,RON,"3.257,73",28.05.2026
+CMD-400062, Livrata,Muntenia Telecom,Audit Conformitate GDPR,3,EUR,"485,08",07.04.2026
+CMD-400063,anulata,carpati food distribution,Modul CRM Avansat,8,EUR,"800,78",09.02.2026
+CMD-400064,ANULATA,Muntenia Telecom,Instalare & Configurare On-Prem,10,RON,"879,32",19.05.2026
+CMD-400065, Livrata,Smart Data Analytics,Training Utilizatori Finali,1,RON,"3.285,38",01.07.2026
+CMD-400066,Anulata,Smart Data Analytics,Training Utilizatori Finali,2,RON,"1.568,31",28.04.2026
+CMD-400067, In curs,Sirius Retail Group,Training Utilizatori Finali,5,EUR,"749,20",24.07.2026
+CMD-400068,In curs,Vectra Industrial,Instalare & Configurare On-Prem,2,RON,"2.369,16",20.05.2026
+CMD-400069,in curs,Proiect Expert Consult,Modul CRM Avansat,2,RON,"870,26",26.05.2026
+CMD-400070,in curs,delta express curier,Custom Connector ERP,1,EUR,"245,94",24.08.2026
+CMD-400071,LIVRATA,Oltenia Power SA,Custom Connector ERP,8,RON,"1.927,26",19.08.2026
+CMD-400072,Livrata ,quantum dynamics srl,Modul CRM Avansat,3,EUR,"169,53",10.04.2026
+CMD-400073,Livrata,Sirius Retail Group,Training Utilizatori Finali,5,RON,"4.359,41",27.08.2026
+CMD-400074,LIVRATA,Quantum Dynamics SRL,Custom Connector ERP,1,EUR,"260,06",11.03.2026
+CMD-400075,Retur,Quantum Dynamics SRL,Training Utilizatori Finali,1,RON,"4.356,09",17.01.2026
+,,,,,,, 
+TOTAL GENERAL,,,,,RON,"478.339,90",

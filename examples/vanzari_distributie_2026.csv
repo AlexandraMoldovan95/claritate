@@ -1,0 +1,77 @@
+EXPORT VANZARI DISTRIBUTIE — sistem intern
+Perioada: 01.01.2026 - 30.09.2026
+Generat automat la 21.09.2026 17:40. NU MODIFICATI ACEST FISIER.
+
+Client,Nr comanda,Data,Produs,Cantitate,Pret unitar,Valuta,Status
+alpin tech solutii,CMD-200001,17.06.2026,Licenta Server Anuala,2,"3.566,69",RON,RETUR
+solaris energy,CMD-200002,13.07.2026,Training Administratori,1,"1.143,23",RON, In curs
+Transilvania Logistica SRL,CMD-200003,08.06.2026,Training Administratori,2,"1.421,93",RON,ANULATA
+Danubius Trading,CMD-200004,06.01.2026,Audit Securitate Cibernetica,2,"349,62",EUR,LIVRATA
+Alpin Tech Solutii,CMD-200005,12.04.2026,Licenta Server Anuala,1,"2.629,55",RON,anulata
+Alpin Tech Solutii,CMD-200006,11.04.2026,Modul Facturare Automata,10,"445,52",RON,RETUR
+Apex Consulting,CMD-200007,04.03.2026,Abonament SaaS Enterprise,4,"3.095,00",RON,In curs
+Agro Vest Distribution,CMD-200008,15.02.2026,Abonament SaaS Enterprise,10,"2.619,77",RON, Livrata
+Vanguard Media Group,CMD-200009,15.02.2026,Integrare API & Webhooks,3,"747,28",EUR, Livrata
+Transilvania Logistica SRL,CMD-200010,03.08.2026,Abonament SaaS Enterprise,2,"558,30",EUR, Retur
+Nordic Software SA,CMD-200011,26.03.2026,Mentenanta & Suport 24/7,1,"1.274,22",RON, In curs
+Apex Consulting,CMD-200012,22.05.2026,Training Administratori,3,"4.788,48",RON, In curs
+Alpin Tech Solutii,CMD-200013,11.05.2026,Audit Securitate Cibernetica,1,"427,05",EUR,LIVRATA
+Carpatica Retail SRL,CMD-200014,13.04.2026,Licenta Server Anuala,8,"55,39",EUR, Retur
+TOTAL PARTIAL,,,,,"77.350,43",RON,
+EuroTrans Express,CMD-200016,03.02.2026,Modul Facturare Automata,1,"860,18",RON,Livrata
+Zenith Medical,CMD-200017,08.07.2026,Audit Securitate Cibernetica,8,"832,82",EUR,Livrata 
+EuroTrans Express,CMD-200018,08.08.2026,Modul Facturare Automata,1,"3.763,97",RON, In curs
+,,,,,,, 
+Transilvania Logistica SRL,CMD-200020,28.08.2026,Abonament SaaS Enterprise,3,"797,66",EUR,Livrata 
+Transilvania Logistica SRL,CMD-200021,07.03.2026,Abonament SaaS Enterprise,1,"3.938,99",RON,Anulata
+danubius trading,CMD-200022,21.05.2026,Mentenanta & Suport 24/7,8,"2.589,51",RON,Retur
+Nordic Software SA,CMD-200023,23.04.2026,Integrare API & Webhooks,2,"3.263,49",RON,In curs
+Solaris Energy,CMD-200024,27.04.2026,Abonament SaaS Enterprise,3,"2.712,35",RON,Retur
+transilvania logistica srl,CMD-200025,02.03.2026,Abonament SaaS Starter,2,"267,01",RON,In curs
+Solaris Energy,CMD-200026,23.01.2026,Integrare API & Webhooks,8,"4.498,21",RON,Retur
+Vanguard Media Group,CMD-200027,01.06.2026,Training Administratori,2,"3.204,04",RON,In curs
+Carpatica Retail SRL,CMD-200028,23.04.2026,Abonament SaaS Enterprise,1,"1.707,94",RON,ANULATA
+Nordic Software SA,CMD-200029,01.02.2026,Audit Securitate Cibernetica,4,"2.285,10",RON,ANULATA
+Alpin Tech Solutii,CMD-200030,29.08.2026,Abonament SaaS Enterprise,1,"2.649,95",RON,Livrata
+Nordic Software SA,CMD-200031,28.01.2026,Integrare API & Webhooks,4,"194,00",EUR,Livrata
+Apex Consulting,CMD-200032,14.04.2026,Licenta Server Anuala,4,"3.538,76",RON,Anulata
+TOTAL PARTIAL,,,,,"124.355,90",RON,
+EuroTrans Express,CMD-200034,27.05.2026,Licenta Server Anuala,2,"569,16",EUR, In curs
+ Zenith Medical ,CMD-200035,20.01.2026,Mentenanta & Suport 24/7,8,"525,67",EUR,Livrata
+ Alpin Tech Solutii ,CMD-200036,15.05.2026,Abonament SaaS Enterprise,2,"4.526,67",RON,Retur
+BioFarm Craiova,CMD-200037,09.03.2026,Training Administratori,10,"1.600,61",RON,Livrata 
+EuroTrans Express,CMD-200038,26.02.2026,Training Administratori,1,"1.523,99",RON,In curs
+,,,,,,, 
+alpin tech solutii,CMD-200040,30.08.2026,Abonament SaaS Enterprise,1,"2.487,54",RON,livrata
+Agro Vest Distribution,CMD-200041,31.08.2026,Modul Facturare Automata,2,"4.021,93",RON, Retur
+BioFarm Craiova,CMD-200042,23.03.2026,Abonament SaaS Starter,8,"3.224,66",RON,anulata
+apex consulting,CMD-200043,08.02.2026,Abonament SaaS Enterprise,8,"1.438,62",RON, Livrata
+Agro Vest Distribution,CMD-200044,07.07.2026,Licenta Server Anuala,8,"4.356,97",RON,ANULATA
+Alpin Tech Solutii,CMD-200045,18.01.2026,Abonament SaaS Starter,1,"732,24",RON,Livrata 
+Zenith Medical,CMD-200003,15.02.2026,Abonament SaaS Starter,1,"4.252,94",RON,anulata
+solaris energy,CMD-200047,12.02.2026,Modul Facturare Automata,10,"2.131,40",RON,Livrata
+Agro Vest Distribution,CMD-200048,24.03.2026,Abonament SaaS Starter,3,"1.287,80",RON,LIVRATA
+Solaris Energy,CMD-200049,05.04.2026,Audit Securitate Cibernetica,2,"928,47",EUR,Anulata
+TOTAL PARTIAL,,,,,"146.640,03",RON,
+carpatica retail srl,CMD-200051,19.02.2026,Modul Facturare Automata,4,"826,98",EUR,Anulata
+Apex Consulting,CMD-200052,09.03.2026,Training Administratori,1,"246,30",EUR,ANULATA
+Vanguard Media Group,CMD-200053,28.08.2026,Integrare API & Webhooks,2,"1.023,85",RON,In curs
+Alpin Tech Solutii,CMD-200054,17.03.2026,Training Administratori,8,"249,17",RON,anulata
+Danubius Trading,CMD-200055,12.03.2026,Abonament SaaS Starter,1,"1.737,82",RON,Anulata
+,,,,,,, 
+Carpatica Retail SRL,CMD-200057,26.03.2026,Training Administratori,10,"327,73",RON,IN CURS
+Solaris Energy,CMD-200058,05.01.2026,Integrare API & Webhooks,3,"4.560,73",RON,anulata
+BioFarm Craiova,CMD-200059,30.03.2026,Licenta Server Anuala,8,"2.031,28",RON,IN CURS
+Apex Consulting,CMD-200060,02.07.2026,Training Administratori,1,"1.528,45",RON, In curs
+Transilvania Logistica SRL,CMD-200061,06.08.2026,Modul Facturare Automata,5,"3.281,94",RON, In curs
+ Zenith Medical ,CMD-200062,06.05.2026,Modul Facturare Automata,1,"724,78",EUR,RETUR
+Nordic Software SA,CMD-200063,25.03.2026,Abonament SaaS Starter,2,"598,20",EUR,Anulata
+Vanguard Media Group,CMD-200064,23.01.2026,Integrare API & Webhooks,4,"1.261,85",RON,RETUR
+Transilvania Logistica SRL,CMD-200065,30.06.2026,Abonament SaaS Enterprise,4,"3.883,23",RON, Retur
+vanguard media group,CMD-200066,17.05.2026,Integrare API & Webhooks,1,"3.870,63",RON,RETUR
+Solaris Energy,CMD-200067,20.05.2026,Mentenanta & Suport 24/7,10,"852,28",EUR,IN CURS
+Solaris Energy,CMD-200068,05.08.2026,Mentenanta & Suport 24/7,5,"1.277,08",RON,RETUR
+Solaris Energy,CMD-200069,16.03.2026,Mentenanta & Suport 24/7,1,"1.217,43",RON,In curs
+solaris energy,CMD-200070,27.03.2026,Audit Securitate Cibernetica,2,"835,13",RON, Livrata
+,,,,,,, 
+TOTAL GENERAL,,,,,"303.764,67",RON,

@@ -1,0 +1,12 @@
+# PLAN.md
+
+1. **Pagina + server** — o singură aplicație Val Town (HTTP val, TypeScript/Hono) servește pagina de upload și API-ul; link public, merge pe telefon → plugin `valtown`
+2. **Upload + stocare** — CSV-ul e trimis la `/api/upload`, salvat brut în SQLite (`std/sqlite`) împreună cu rezultatul curățării; fiecare upload primește un link propriu `/d/:id` → plugin `valtown`
+3. **Detectare structură** — găsește rândul real de antet (sare preambulul narativ), separatorul (`,` sau `;`) și rolul fiecărei coloane din numele ei + conținut: dată, sumă, preț, cantitate, monedă, status, categorie, ID — funcționează la orice ordine a coloanelor → ghidat de `/data:explore-data`
+4. **Curățare deterministă (cod, nu model)** — elimină rânduri goale și rânduri TOTAL/SUBTOTAL, trim + normalizare majuscule pe text (clienți, status), numere în format RO și EN (`1.234,56`, `1,234.56`), date `dd.mm.yyyy` / ISO, deduplicare pe ID; raport cu fiecare rând eliminat și motivul → ghidat de `/data:validate-data`
+5. **Monede separate** — orice sumă e calculată și afișată pe fiecare monedă (RON, EUR…) separat; nicio conversie, niciun curs inventat → cod
+6. **Agregări în cod** — valoare = cantitate × preț (sau coloana de sumă), totaluri pe client, produs, lună, status; toate cifrele vin din TypeScript, testate automat (`deno task test`) pe cele 4 CSV-uri + un CSV murdar de test → cod
+7. **6 dashboard-uri predefinite** — (1) Sumar general + calitatea datelor, (2) Venit livrat, (3) Venit pierdut (Retur + Anulată), (4) Cea mai bună / cea mai slabă lună, (5) Top clienți și produse, (6) Sănătatea comenzilor; dacă lipsește o coloană necesară, dashboard-ul spune explicit ce lipsește, nu pică → cod
+8. **Grafice** — câte un grafic pe dashboard, desenat în SVG direct din agregările deja calculate (fără bibliotecă externă), cu tooltip, tabel alternativ și paletă verificată pentru daltonism; stil „Corporate Trust” din `DESIGN.md` → skill-ul `dataviz` (validarea paletei) + designer agent
+9. **Întrebări în română** — modelul Val Town (`std/openai`, fără cheie API) primește doar întrebarea + schema coloanelor și întoarce un plan JSON (ce metrică, ce coloană, ce filtre, ce grupare); codul validează planul, calculează și formulează răspunsul — modelul nu vede și nu scrie cifre → plugin `valtown`
+10. **Publicare + verificare** — deploy public pe subdomeniul Val Town, test pe 375px și 1440px, audit de design/accesibilitate cu Impeccable, README + lista de plugin-uri pentru predare → plugin `valtown` + `impeccable`

@@ -1,0 +1,166 @@
+// Rutele aplicației. Nu depinde de Val Town: primește din afară stocarea,
+// planificatorul (modelul) și cititorul de fișiere statice. main.ts le leagă de
+// Val Town (SQLite + std/openai), dev.ts de variante locale pentru teste.
+
+import { Hono } from "npm:hono@4.6.14";
+import { analyze, AnalysisError, MAX_BYTES } from "./core/analyze.ts";
+import { answerQuestion, schemaFor, validatePlan } from "./core/ask.ts";
+import { ROLE_LABELS, type Role } from "./core/detect.ts";
+import { OG_IMAGE } from "./og_image.ts";
+
+export interface StoredUpload { id: string; filename: string; raw: string; overrides: Record<string, Role> }
+
+export interface Store {
+  save(filename: string, raw: string): Promise<string>;
+  get(id: string): Promise<StoredUpload | null>;
+  setOverrides(id: string, overrides: Record<string, Role>): Promise<void>;
+}
+
+export type Planner = (system: string, question: string) => Promise<unknown>;
+
+export interface Deps {
+  store: Store;
+  planner?: Planner;
+  readStatic: (path: string) => Promise<{ body: string; type: string } | null>;
+}
+
+export const EXAMPLES = [
+  { file: "vanzari_2026.csv", label: "Vânzări 2026" },
+  { file: "vanzari_distributie_2026.csv", label: "Distribuție" },
+  { file: "vanzari_enterprise_b2b_2026.csv", label: "Enterprise B2B" },
+  { file: "vanzari_servicii_cloud_2026.csv", label: "Servicii cloud" },
+];
+
+const ID_RE = /^[a-z0-9]{6,16}$/;
+
+export function createApp(deps: Deps) {
+  const app = new Hono();
+
+  app.onError((err, c) => {
+    if (err instanceof AnalysisError) return c.json({ error: err.message }, 400);
+    console.error(err);
+    return c.json({ error: "A apărut o eroare neașteptată. Încearcă din nou sau cu alt fișier." }, 500);
+  });
+
+  const page = async () => {
+    const f = await deps.readStatic("/frontend/index.html");
+    return f
+      ? new Response(f.body, { headers: { "content-type": "text/html; charset=utf-8" } })
+      : new Response("index.html lipsește", { status: 500 });
+  };
+  app.get("/", page);
+  app.get("/d/:id", page);
+
+  app.get("/frontend/:file", async (c) => {
+    const name = c.req.param("file");
+    if (!/^[\w.-]+\.(js|css|svg|png|ico|webmanifest)$/.test(name)) return c.notFound();
+    const f = await deps.readStatic(`/frontend/${name}`);
+    if (!f) return c.notFound();
+    return new Response(f.body, { headers: { "content-type": f.type, "cache-control": "public, max-age=300" } });
+  });
+
+  // imaginea de previzualizare pentru Facebook, X, LinkedIn, WhatsApp, Discord
+  app.get("/og.jpg", () => new Response(OG_IMAGE.buffer as ArrayBuffer, {
+    headers: { "content-type": "image/jpeg", "cache-control": "public, max-age=86400" },
+  }));
+
+  app.get("/api/examples", (c) => c.json({ examples: EXAMPLES }));
+  app.get("/examples/:file", async (c) => {
+    const ex = EXAMPLES.find((e) => e.file === c.req.param("file"));
+    if (!ex) return c.notFound();
+    const f = await deps.readStatic(`/examples/${ex.file}`);
+    if (!f) return c.notFound();
+    return new Response(f.body, {
+      headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="${ex.file}"` },
+    });
+  });
+
+  app.get("/api/roles", (c) => c.json({ roles: ROLE_LABELS }));
+
+  // Upload: multipart (fișier) sau JSON { filename, text } / { example }
+  app.post("/api/upload", async (c) => {
+    const len = Number(c.req.header("content-length") ?? 0);
+    if (len > MAX_BYTES + 64 * 1024) return c.json({ error: "Fișierul e prea mare (maxim 5 MB)." }, 413);
+    let filename = "fisier.csv", text = "";
+    const ctype = c.req.header("content-type") ?? "";
+    if (ctype.includes("multipart/form-data")) {
+      const form = await c.req.formData();
+      const file = form.get("file");
+      if (!(file instanceof File)) return c.json({ error: "Nu am primit niciun fișier." }, 400);
+      if (file.size > MAX_BYTES) return c.json({ error: "Fișierul e prea mare (maxim 5 MB)." }, 413);
+      filename = file.name || filename;
+      text = await decodeText(new Uint8Array(await file.arrayBuffer()));
+    } else {
+      const body = await c.req.json().catch(() => ({})) as { filename?: string; text?: string; example?: string };
+      if (body.example) {
+        const ex = EXAMPLES.find((e) => e.file === body.example);
+        const f = ex && await deps.readStatic(`/examples/${ex.file}`);
+        if (!ex || !f) return c.json({ error: "Exemplul nu există." }, 404);
+        filename = ex.file; text = f.body;
+      } else {
+        filename = String(body.filename ?? filename).slice(0, 200);
+        text = String(body.text ?? "");
+      }
+    }
+    const { analysis } = analyze(text, filename);        // aruncă AnalysisError pe fișiere proaste
+    const id = await deps.store.save(filename, text);
+    return c.json({ id, analysis });
+  });
+
+  const load = async (id: string) => {
+    if (!ID_RE.test(id)) return null;
+    return await deps.store.get(id);
+  };
+
+  app.get("/api/d/:id", async (c) => {
+    const up = await load(c.req.param("id"));
+    if (!up) return c.json({ error: "Nu am găsit acest dashboard. Poate linkul e greșit." }, 404);
+    const { analysis } = analyze(up.raw, up.filename, up.overrides);
+    return c.json({ id: up.id, analysis });
+  });
+
+  app.post("/api/d/:id/roles", async (c) => {
+    const up = await load(c.req.param("id"));
+    if (!up) return c.json({ error: "Nu am găsit acest dashboard." }, 404);
+    const body = await c.req.json().catch(() => ({})) as { overrides?: Record<string, string> };
+    const overrides: Record<string, Role> = {};
+    for (const [k, v] of Object.entries(body.overrides ?? {})) {
+      if (/^\d{1,3}$/.test(k) && v in ROLE_LABELS) overrides[k] = v as Role;
+    }
+    await deps.store.setOverrides(up.id, overrides);
+    const { analysis } = analyze(up.raw, up.filename, overrides);
+    return c.json({ id: up.id, analysis });
+  });
+
+  app.post("/api/d/:id/ask", async (c) => {
+    const up = await load(c.req.param("id"));
+    if (!up) return c.json({ error: "Nu am găsit acest dashboard." }, 404);
+    const body = await c.req.json().catch(() => ({})) as { question?: string };
+    const question = String(body.question ?? "").trim().slice(0, 300);
+    if (question.length < 3) return c.json({ error: "Scrie o întrebare." }, 400);
+    const { analysis, records } = analyze(up.raw, up.filename, up.overrides);
+    // Păstrăm planul brut al modelului ca să vedem în loguri când plasa de siguranță (guardPlan) l-a corectat.
+    let modelRaw: unknown;
+    const planner: Planner | undefined = deps.planner && (async (s, q) => (modelRaw = await deps.planner!(s, q)));
+    const res = await answerQuestion(question, analysis, records, planner);
+    if (res.source === "model" && res.plan) {
+      const modelPlan = validatePlan(modelRaw, schemaFor(analysis, records)).plan;
+      if (JSON.stringify(modelPlan) !== JSON.stringify(res.plan)) {
+        console.log(`[ask] plasa de siguranță a corectat planul. model: ${JSON.stringify(modelPlan)} → corectat: ${JSON.stringify(res.plan)}`);
+      }
+    }
+    return c.json(res);
+  });
+
+  return app;
+}
+
+/** UTF-8 cu sau fără BOM; dacă nu e UTF-8 valid, încearcă Windows-1250 (Excel românesc vechi). */
+async function decodeText(bytes: Uint8Array): Promise<string> {
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    try { return new TextDecoder("windows-1250").decode(bytes); }
+    catch { return new TextDecoder("utf-8").decode(bytes); }
+  }
+}
