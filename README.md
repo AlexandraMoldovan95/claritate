@@ -1,5 +1,7 @@
 # Claritate: dashboard din orice CSV
 
+![Claritate — urcă un CSV, primești dashboard-ul](docs/og-preview.jpg)
+
 **Link live:** https://claritate.val.run (merge pe telefon)
 **Exemplu gata încărcat:** https://claritate.val.run/d/w8a9nyaqcr (fișierul „Enterprise B2B”)
 
