@@ -13,7 +13,7 @@ Urci un CSV cu vânzări și aplicația îl **citește**, îi **detectează colo
 
 ## Cum se folosește
 
-1. Deschizi linkul și **tragi un CSV** în pagină sau apeși pe unul dintre cele **4 exemple murdare**.
+1. Deschizi linkul și **tragi un CSV** în pagină sau apeși pe unul dintre cele **4 exemple neconforme**.
 2. Vezi imediat **ce a înțeles aplicația** din fișier (rolul fiecărei coloane, pe care îl poți corecta) și **ce a curățat** (rândurile scoase și motivul).
 3. Treci prin cele **6 tab-uri**, alegi **moneda** (RON / EUR) și pui întrebări.
 4. **Copiază linkul** ca să trimiți dashboard-ul cuiva (fiecare fișier urcat are adresa lui, `/d/…`).
@@ -31,7 +31,7 @@ Urci un CSV cu vânzări și aplicația îl **citește**, îi **detectează colo
 
 Aplicația folosește „**venit livrat / venit pierdut**”, nu „profit / pierdere”: fișierele nu au costuri, deci profitul nu se poate calcula corect. Dacă lipsește o coloană (de exemplu **statusul**), dashboard-ul spune explicit ce lipsește, în loc să inventeze.
 
-## Date murdare: ce găsește și ce face
+## Date neconforme: ce găsește și ce face
 
 Exemplu real, `vanzari_2026.csv`: **145 de rânduri** sub antet → **129 de comenzi valide**.
 
@@ -68,7 +68,7 @@ Tot raportul de curățare e vizibil în pagină („**Ce am curățat**” → 
 
 ## Testare și calitate
 
-- **10 teste automate** (`deno task test`): cifrele de pe 2 fișiere comparate **la ban** cu rapoartele independente făcute cu pluginul `data` (în `docs/`), un **CSV sintetic murdar** (`;`, numere englezești, fără status, coloane în altă ordine), fișiere invalide, un plan „rău” de la model care trebuie respins, planurile greșite văzute live și un CSV care **nu e de vânzări** (note școlare).
+- **10 teste automate** (`deno task test`): cifrele de pe 2 fișiere comparate **la ban** cu rapoartele independente făcute cu pluginul `data` (în `docs/`), un **CSV sintetic neconform** (`;`, numere englezești, fără status, coloane în altă ordine), fișiere invalide, un plan „rău” de la model care trebuie respins, planurile greșite văzute live și un CSV care **nu e de vânzări** (note școlare).
 - **Teste live** pe https://claritate.val.run, cu logurile Val Town: planul întors de model și, când e cazul, corecția.
 - **Audit Impeccable** (desktop 1280px și telefon 375px): scor inițial 15/20. Corectate: ținte de atins sub **44px**, **contrast** sub AA, numele lung de fișier rupt urât pe telefon și **ordinea titlurilor** (h1 → h2). După corecții: fără scroll orizontal, fără contrast slab, fără ținte prea mici (în afară de barele graficului pe telefon, care au alternativă în tabel).
 
@@ -77,7 +77,7 @@ Tot raportul de curățare e vizibil în pagină („**Ce am curățat**” → 
 | Plugin | Marketplace | Ce a făcut concret |
 |---|---|---|
 | **`valtown`** | `claude-plugins-official` | a verificat importurile Val Town după documentația actuală (`std/sqlite`, `std/openai`, `std/utils`), a creat val-ul `AlexandraM/claritate`, a urcat fișierele, a setat linkul scurt `claritate.val.run` și a citit logurile pentru testele live |
-| **`data`** | `knowledge-work-plugins` | `/data:explore-data` pe `vanzari_2026.csv` și `/data:validate-data` pe `vanzari_enterprise_b2b_2026.csv`: catalogul de murdării și **cifrele de referință** pe care le verifică testele (`docs/`) |
+| **`data`** | `knowledge-work-plugins` | `/data:explore-data` pe `vanzari_2026.csv` și `/data:validate-data` pe `vanzari_enterprise_b2b_2026.csv`: catalogul de neconformități și **cifrele de referință** pe care le verifică testele (`docs/`) |
 | **`impeccable`** | `impeccable` | auditul de design și accesibilitate de mai sus și reparațiile din `frontend/` |
 
 **Alte unelte (nu sunt plugin-uri):** Claude (Cowork) a scris codul. **Designer agent**-ul folosit ca referință (`materiale-referinta/design-system.md`, stilul „Corporate Trust”) a dat direcția vizuală, adaptată în `DESIGN.md`. Skill-ul **dataviz** a validat paleta graficelor (inclusiv pentru daltonism).

@@ -22,7 +22,7 @@ Un link public care se deschide și pe telefon. Intri, urci un CSV, vezi dashboa
 ## Cerințe
 
 - Trebuie să meargă cu orice CSV, nu doar cu unul pregătit anume pentru demo.
-- Nu se blochează pe date murdare: rânduri goale, sume scrise ca text, același nume scris
+- Nu se blochează pe date neconforme: rânduri goale, sume scrise ca text, același nume scris
   în trei feluri, rânduri de total intercalate.
 - Modelul nu calculează numere. El alege *ce* se calculează, codul face aritmetica.
 

@@ -12,7 +12,7 @@ O aplicație web publică (merge și pe telefon) în care urci un CSV și prime�
 ## Cerințe de produs (nenegociabile)
 
 - **Trebuie să meargă cu orice CSV**, nu doar cu cele 4 din folder. Coloanele pot fi în orice ordine și pot lipsi.
-- **Nu se blochează pe date murdare**: rânduri goale, sume scrise ca text, același nume scris în trei feluri, rânduri de total intercalate.
+- **Nu se blochează pe date neconforme**: rânduri goale, sume scrise ca text, același nume scris în trei feluri, rânduri de total intercalate.
 - **Modelul nu calculează numere.** El alege *ce* se calculează; codul face aritmetica.
 - Livrabile: `PLAN.md` (10 rânduri, scris înainte de cod) + linkul aplicației.
 
@@ -48,13 +48,13 @@ backend/core/ask.ts         întrebare → plan JSON (model sau reguli) → vali
 frontend/index.html         pagina (upload, dashboard-uri, întrebări)
 frontend/app.js             UI + grafice SVG (textContent peste tot, niciun innerHTML cu date)
 frontend/styles.css         token-uri din DESIGN.md
-tests/core_test.ts          8 teste Deno: cifrele de referință, CSV sintetic murdar, plan invalid
+tests/core_test.ts          8 teste Deno: cifrele de referință, CSV sintetic neconform, plan invalid
 examples/                   cele 4 seturi de date demo, servite ca „încearcă un exemplu”
 ```
 
 Rute: `GET /` (pagina), `POST /api/upload` (multipart, max 5 MB), `GET /api/d/:id` (rezultatul unui upload), `POST /api/d/:id/ask` (întrebare), `GET /d/:id` (link de partajat către un dashboard), `GET /examples/:name`, `POST /api/d/:id/roles` (corectarea manuală a rolului unei coloane).
 
-## Datele de test (ce murdărie există în realitate)
+## Datele de test (ce neconformități există în realitate)
 
 4 fișiere în folder: `vanzari_2026.csv`, `vanzari_distributie_2026.csv`, `vanzari_enterprise_b2b_2026.csv`, `vanzari_servicii_cloud_2026.csv`. Toate au aceleași 8 coloane — `Nr comanda, Data, Client, Produs, Cantitate, Pret unitar, Valuta, Status` — dar **în ordine diferită** în fiecare fișier. Probleme găsite:
 
@@ -158,7 +158,7 @@ Codul e scris cu Claude (Cowork) în acest folder; plugin-urile rulează local, 
 ## Definiția de „gata”
 
 - [x] Link public Val Town, merge pe telefon (375px, fără scroll orizontal) — https://claritate.val.run
-- [x] Cele 4 seturi de date demo + 1 CSV murdar inventat (`;`, format EN, fără status, coloane lipsă) dau dashboard-uri corecte, fără erori
+- [x] Cele 4 seturi de date demo + 1 CSV neconform inventat (`;`, format EN, fără status, coloane lipsă) dau dashboard-uri corecte, fără erori
 - [x] Totalurile verificate independent (script separat) pe cel puțin 2 fișiere — `tests/core_test.ts` compară cu `docs/`
 - [x] Nicio cifră din răspunsuri nu vine de la model (modelul întoarce doar un plan JSON; testat și cu un plan invalid)
 - [x] Impeccable rulat, problemele reale reparate (15/20 înainte; ținte 44px, contrast AA, titluri h1→h2)
