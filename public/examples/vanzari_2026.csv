@@ -1,0 +1,150 @@
+EXPORT VANZARI — sistem intern
+Perioada: 01.01.2026 - 31.08.2026
+Generat automat la 15.09.2026 08:41. NU MODIFICATI ACEST FISIER.
+
+Nr comanda,Data,Client,Produs,Cantitate,Pret unitar,Valuta,Status
+CMD-100043,27.04.2026,Electra Mobil,Training on-site,2,"1.841,86",RON, Livrata
+CMD-100013,19.01.2026,Delta Foods SA,Implementare,4,"701,99",EUR,Livrata 
+CMD-100037,11.03.2026, Hermes Logistics,Suport Premium,5,"121,46",EUR, Retur
+CMD-100105,13.07.2026,Jupiter Media,Implementare,2,"3.756,73",RON,Livrata 
+CMD-100124,20.08.2026,Carpat Distribution,Licenta Desktop,1,"895,14",RON,Livrata
+CMD-100014,12.01.2026,Delta Foods SA,Licenta Desktop,4,"933,14",RON,Livrata
+CMD-100036,11.03.2026,Aurora Retail SRL,Implementare,2,"3.353,27",RON,Livrata 
+CMD-100064,06.05.2026,Farmacia Vita,Abonament Cloud Basic,1,"159,24",RON,LIVRATA
+CMD-100011,17.01.2026,Grand Hotel Olt,Abonament Cloud Pro,2,"95,90",EUR, Livrata
+CMD-100125,14.08.2026,Lumina Energy,Abonament Cloud Basic,2,"138,78",RON,Livrata 
+CMD-100040,05.03.2026,Jupiter Media,Licenta Desktop,1,"189,35",EUR,LIVRATA
+CMD-100123,20.08.2026,Hermes Logistics,Suport Premium,1,"125,25",EUR,LIVRATA
+CMD-100128,22.08.2026,Meridian Auto,Suport Premium,4,"653,00",RON,Livrata 
+CMD-100016,12.01.2026,Kappa Textile,Implementare,1,"3.517,99",RON,Livrata 
+TOTAL PARTIAL,,,,,"54.854,12",RON,
+CMD-100057,25.04.2026,Electra Mobil,Implementare,3,"3.756,07",RON,Livrata
+CMD-100043,27.04.2026,Electra Mobil,Training on-site,2,"1.841,86",RON,livrata
+TOTAL PARTIAL,,,,,"24.314,12",RON,
+CMD-100111,23.07.2026,Lumina Energy,Abonament Cloud Basic,1,"157,53",RON,LIVRATA
+CMD-100022,14.02.2026,Delta Foods SA,Licenta Desktop,2,"937,55",RON, Livrata
+,,,,,,,
+CMD-100041,10.03.2026,Kappa Textile,Abonament Cloud Basic,1,"149,64",RON,Livrata
+CMD-100115,17.07.2026,delta foods sa ,Abonament Cloud Pro,1,"430,70",RON,IN CURS
+CMD-100030,11.02.2026,Bistro Central,Abonament Cloud Pro,1,"92,46",EUR,Livrata
+CMD-100005,11.01.2026,Carpat Distribution,Suport Premium,3,"630,63",RON,in curs
+CMD-100026,02.02.2026,Farmacia Vita,Audit securitate,10,"2.361,84",RON, Livrata
+CMD-100025,06.02.2026,Nova Print,Implementare,1,"3.230,02",RON,Livrata 
+CMD-100072,09.05.2026,Nova Print,Modul Raportare,1,"247,87",EUR,IN CURS
+CMD-100107,05.07.2026,hermes logistics,Modul Raportare,3,"1.220,97",RON,LIVRATA
+CMD-100081,25.06.2026,Hermes Logistics,Abonament Cloud Basic,1,"137,57",RON,IN CURS
+CMD-100122,04.08.2026,Ideal Construct,Suport Premium,3,"125,73",EUR,Livrata 
+CMD-100126,21.08.2026,Electra Mobil,Suport Premium,5,"645,57",RON,livrata
+CMD-100059,26.04.2026,Aurora Retail SRL,Abonament Cloud Pro,1,"90,25",EUR,Livrata
+CMD-100078,26.05.2026,Lumina Energy,Licenta Desktop,2,"909,65",RON,RETUR
+CMD-100012,04.01.2026,Grand Hotel Olt,Abonament Cloud Basic,1,"154,66",RON,retur
+CMD-100053,28.04.2026,Carpat Distribution,Audit securitate,4,"2.459,98",RON,LIVRATA
+CMD-100090,20.06.2026,Electra Mobil,Abonament Cloud Pro,1,"457,49",RON, Livrata
+CMD-100046,06.04.2026, Hermes Logistics,Audit securitate,1,"2.334,13",RON,Livrata 
+CMD-100017,01.01.2026,Nova Print,Licenta Desktop,1,"179,34",EUR,livrata
+CMD-100104,17.07.2026,Bistro Central,Abonament Cloud Basic,10,"29,54",EUR,Livrata 
+CMD-100094,07.06.2026,Aurora Retail SRL,Training on-site,2,"1.893,87",RON,livrata
+CMD-100070,13.05.2026,Meridian Auto,Abonament Cloud Basic,5,"145,71",RON,Retur 
+CMD-100073,23.05.2026,Bistro Central ,Audit securitate,4,"470,07",EUR,RETUR
+CMD-100027,11.02.2026,Grand Hotel Olt,Modul Raportare,2,"245,46",EUR,Livrata 
+TOTAL PARTIAL,,,,,"52.425,77",RON,
+CMD-100067,27.05.2026,Jupiter Media,Training on-site,1,"1.815,58",RON,Livrata 
+CMD-100001,05.01.2026,Aurora Retail SRL,Training on-site,4,"351,45",EUR,Livrata
+CMD-100114,03.07.2026,Grand Hotel Olt,Audit securitate,1,"485,27",EUR,Livrata 
+CMD-100048,01.04.2026,Jupiter Media,Suport Premium,4,"605,17",RON,Livrata 
+CMD-100058,24.04.2026,Ideal Construct,Audit securitate,1,"507,67",EUR,retur
+CMD-100098,11.06.2026,Delta Foods SA,Abonament Cloud Pro,10,"427,35",RON,Livrata
+CMD-100028,22.02.2026,Nova Print,Modul Raportare,2,"1.297,57",RON,Livrata
+CMD-100035,14.03.2026,Kappa Textile,Abonament Cloud Pro,5,"461,48",RON, Livrata
+CMD-100106,09.07.2026,Meridian Auto,Licenta Desktop,2,"913,15",RON, Livrata
+CMD-100103,20.07.2026,Jupiter Media,Implementare,1,"3.260,20",RON,livrata
+CMD-100042,04.03.2026,Nova Print,Abonament Cloud Basic,2,"28,61",EUR,Livrata 
+CMD-100084,07.06.2026,Farmacia Vita,Suport Premium,4,"648,02",RON,in curs
+CMD-100004,23.01.2026,delta foods sa ,Modul Raportare,5,"233,61",EUR,livrata
+CMD-100118,02.08.2026,Electra Mobil,Implementare,2,"3.483,70",RON,Anulata 
+CMD-100129,04.08.2026,Jupiter Media,Suport Premium,1,"578,06",RON, Livrata
+CMD-100060,08.04.2026,Carpat Distribution,Training on-site,1,"347,26",EUR,livrata
+CMD-100047,04.04.2026,Nova Print,Modul Raportare,10,"231,72",EUR,Livrata
+CMD-100113,12.07.2026, Hermes Logistics,Implementare,10,"673,75",EUR,Livrata
+CMD-100045,12.04.2026,DELTA FOODS SA,Suport Premium,3,"666,17",RON, Livrata
+CMD-100054,19.04.2026,Meridian Auto,Abonament Cloud Basic,3,"151,30",RON, Livrata
+CMD-100079,04.05.2026,Farmacia Vita,Licenta Desktop,3,"914,17",RON,Anulata
+CMD-100096,01.06.2026,Delta Foods SA,Suport Premium,1,"122,80",EUR, Livrata
+CMD-100117,08.08.2026,Farmacia Vita,Suport Premium,3,"591,68",RON,Livrata
+CMD-100044,27.04.2026,Bistro Central,Modul Raportare,5,"269,52",EUR,retur
+CMD-100083,06.06.2026,hermes logistics,Suport Premium,1,"592,13",RON,RETUR
+CMD-100007,03.01.2026,Meridian Auto,Audit securitate,2,"2.272,15",RON,livrata
+CMD-100051,10.04.2026,hermes logistics,Audit securitate,5,"510,59",EUR,Anulata 
+CMD-100097,16.06.2026,Aurora Retail SRL,Audit securitate,2,"486,42",EUR,Livrata 
+CMD-100091,21.06.2026,Kappa Textile,Abonament Cloud Pro,4,"96,58",EUR,In curs 
+CMD-100019,10.02.2026,Electra Mobil,Modul Raportare,3,"1.169,14",RON,Retur 
+CMD-100120,03.08.2026,Delta Foods SA,Suport Premium,2,"614,61",RON,livrata
+TOTAL PARTIAL,,,,,"11.968,74",RON,
+CMD-100038,03.03.2026,Kappa Textile,Implementare,2,"3.471,63",RON, Livrata
+CMD-100099,28.06.2026,Farmacia Vita,Implementare,2,"3.546,97",RON, Livrata
+CMD-100127,03.08.2026,Ideal Construct,Abonament Cloud Pro,4,"89,64",EUR,LIVRATA
+CMD-100074,07.05.2026,Farmacia Vita,Abonament Cloud Basic,2,"142,43",RON,livrata
+,,,,,,,
+CMD-100093,25.06.2026,Carpat Distribution,Abonament Cloud Basic,2,"144,35",RON,LIVRATA
+CMD-100112,05.07.2026,Aurora Retail SRL,Abonament Cloud Basic,1,"157,20",RON,Livrata 
+CMD-100039,09.03.2026,Jupiter Media,Abonament Cloud Pro,4,"84,74",EUR,LIVRATA
+CMD-100023,13.02.2026,Carpat Distribution,Audit securitate,1,"2.543,72",RON, Livrata
+CMD-100063,09.05.2026,Kappa Textile,Abonament Cloud Pro,1,"438,93",RON,Livrata
+CMD-100008,16.01.2026,Electra Mobil,Abonament Cloud Pro,1,"465,33",RON,retur
+CMD-100050,14.04.2026,Meridian Auto,Modul Raportare,5,"264,22",EUR,Livrata 
+CMD-100029,24.02.2026,Carpat Distribution,Audit securitate,1,"2.384,31",RON,Retur 
+CMD-100018,11.01.2026,Farmacia Vita,Licenta Desktop,3,"833,30",RON, Anulata
+CMD-100016,12.01.2026,Kappa Textile,Implementare,1,"3.517,99",RON,Livrata
+CMD-100077,15.05.2026,Hermes Logistics,Implementare,1,"3.299,21",RON,Livrata 
+CMD-100010,18.01.2026,Nova Print,Training on-site,2,"1.907,09",RON,Livrata 
+CMD-100068,04.05.2026,Nova Print,Abonament Cloud Basic,5,"157,28",RON,livrata
+CMD-100002,01.01.2026,Nova Print,Audit securitate,1,"2.267,84",RON,Livrata
+CMD-100110,17.07.2026,Jupiter Media,Audit securitate,5,"2.258,95",RON,livrata
+CMD-100061,14.04.2026,Electra Mobil,Suport Premium,10,"578,16",RON,Livrata
+CMD-100092,21.06.2026,Nova Print,Abonament Cloud Basic,5,"137,12",RON,Livrata 
+CMD-100052,14.04.2026,Hermes Logistics,Abonament Cloud Pro,2,"462,48",RON,anulata
+CMD-100075,22.05.2026, Hermes Logistics,Suport Premium,10,"119,06",EUR,anulata
+CMD-100082,17.06.2026,Bistro  Central,Suport Premium,3,"115,56",EUR,Livrata
+CMD-100101,12.06.2026,Nova Print,Abonament Cloud Pro,1,"93,84",EUR,livrata
+CMD-100119,08.08.2026,Kappa Textile,Suport Premium,4,"644,25",RON,Anulata
+CMD-100032,18.03.2026,Nova Print,Implementare,10,"3.252,16",RON,LIVRATA
+CMD-100031,11.03.2026,Jupiter Media,Audit securitate,1,"475,33",EUR,ANULATA
+CMD-100109,15.07.2026,Bistro  Central,Audit securitate,10,"2.400,76",RON, Retur
+CMD-100055,26.04.2026,hermes logistics,Modul Raportare,5,"1.205,14",RON,livrata
+CMD-100088,10.06.2026,Ideal Construct,Audit securitate,10,"2.234,09",RON, Livrata
+CMD-100116,11.08.2026,DELTA FOODS SA,Modul Raportare,1,"1.296,35",RON,anulata
+CMD-100009,15.01.2026,hermes logistics,Modul Raportare,5,"1.194,81",RON,livrata
+CMD-100089,13.06.2026,Nova Print,Training on-site,4,"1.930,39",RON,retur
+CMD-100021,12.02.2026,Nova Print,Abonament Cloud Pro,1,"466,91",RON,livrata
+CMD-100056,20.04.2026,Lumina Energy,Abonament Cloud Pro,2,"415,25",RON,Livrata 
+CMD-100108,20.07.2026,Kappa Textile,Training on-site,4,"1.875,23",RON,Anulata 
+CMD-100080,09.06.2026,Hermes Logistics,Implementare,10,"696,29",EUR,livrata
+CMD-100069,04.05.2026,Electra Mobil,Licenta Desktop,2,"877,30",RON, In curs
+CMD-100062,02.05.2026,Lumina Energy,Abonament Cloud Pro,1,"456,90",RON,Livrata 
+CMD-100066,02.05.2026,Carpat Distribution,Abonament Cloud Pro,5,"425,47",RON,Livrata 
+CMD-100015,13.01.2026,Kappa Textile,Abonament Cloud Pro,5,"470,62",RON,livrata
+CMD-100087,13.06.2026,Lumina Energy,Suport Premium,2,"642,85",RON, Anulata
+CMD-100006,10.01.2026,Meridian Auto,Licenta Desktop,3,"904,43",RON,livrata
+CMD-100076,20.05.2026,Lumina Energy,Abonament Cloud Pro,1,"83,26",EUR,LIVRATA
+TOTAL PARTIAL,,,,,"12.038,29",RON,
+CMD-100034,09.03.2026,DELTA FOODS SA,Training on-site,4,"350,84",EUR,livrata
+CMD-100033,15.03.2026,Bistro Central,Abonament Cloud Basic,1,"29,76",EUR,LIVRATA
+CMD-100003,04.01.2026,Aurora Retail SRL,Licenta Desktop,10,"839,03",RON, Livrata
+CMD-100024,17.02.2026,Grand Hotel Olt,Abonament Cloud Basic,2,"158,49",RON,Livrata
+CMD-100086,22.06.2026,Carpat Distribution,Implementare,2,"3.768,70",RON,Livrata 
+CMD-100090,20.06.2026,Electra Mobil,Abonament Cloud Pro,1,"457,49",RON, Livrata
+CMD-100033,15.03.2026,Bistro Central,Abonament Cloud Basic,1,"29,76",EUR,Livrata 
+TOTAL PARTIAL,,,,,"51.770,73",RON,
+CMD-100121,23.08.2026,Hermes Logistics,Abonament Cloud Basic,4,"159,80",RON,LIVRATA
+CMD-100100,01.06.2026,Bistro Central,Modul Raportare,1,"1.163,91",RON,Livrata
+CMD-100127,03.08.2026,Ideal Construct,Abonament Cloud Pro,4,"89,64",EUR, Livrata
+CMD-100095,09.06.2026,Electra Mobil,Suport Premium,5,"629,77",RON,LIVRATA
+CMD-100102,27.07.2026,Grand Hotel Olt,Suport Premium,1,"578,04",RON,Livrata
+CMD-100085,27.06.2026,Jupiter Media,Abonament Cloud Pro,2,"416,33",RON,Livrata
+CMD-100071,01.05.2026,Jupiter Media,Abonament Cloud Pro,1,"83,04",EUR,livrata
+CMD-100049,15.04.2026,Delta Foods SA,Suport Premium,3,"651,90",RON,Anulata 
+CMD-100020,22.02.2026,Jupiter Media,Licenta Desktop,1,"184,17",EUR,anulata
+CMD-100111,23.07.2026,Lumina Energy,Abonament Cloud Basic,1,"157,53",RON,livrata
+CMD-100065,24.05.2026,Meridian Auto,Modul Raportare,5,"1.201,08",RON,In curs 
+,,,,,,,
+TOTAL GENERAL,,,,,"568.840,57",RON,

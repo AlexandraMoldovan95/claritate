@@ -8,3 +8,8 @@ Thumbs.db
 # Impeccable plugin cache (local file paths, not meant for the public repo)
 .impeccable/
 frontend/.impeccable/
+
+# Vercel / npm
+node_modules/
+package-lock.json
+.vercel/

@@ -2,7 +2,7 @@
 // planificatorul (modelul) și cititorul de fișiere statice. main.ts le leagă de
 // Val Town (SQLite + std/openai), dev.ts de variante locale pentru teste.
 
-import { Hono } from "npm:hono@4.6.14";
+import { Hono } from "hono";
 import { analyze, AnalysisError, MAX_BYTES } from "./core/analyze.ts";
 import { answerQuestion, schemaFor, validatePlan } from "./core/ask.ts";
 import { ROLE_LABELS, type Role } from "./core/detect.ts";

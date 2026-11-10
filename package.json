@@ -1,0 +1,13 @@
+{
+  "name": "claritate",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vercel/kv": "3.0.0",
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15",
+    "typescript": "5.7.2"
+  }
+}

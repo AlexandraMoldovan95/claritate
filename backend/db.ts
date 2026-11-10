@@ -50,6 +50,37 @@ export async function sqliteStore(sqlite: SqliteLike): Promise<Store> {
   };
 }
 
+// Stocarea pe Vercel: Vercel KV (Redis, prin Upstash) — cost zero pe planul gratuit,
+// nicio cheie API de configurat manual (variabilele vin automat când legi un KV
+// store de proiect, din Vercel Storage). Un singur key per id, TTL ca să nu
+// umplem gratis cota (90 de zile e suficient pentru un demo).
+const TTL_SECONDS = 60 * 60 * 24 * 90;
+
+interface KvLike {
+  get<T>(key: string): Promise<T | null>;
+  set(key: string, value: unknown, opts?: { ex?: number }): Promise<unknown>;
+}
+
+export function vercelKvStore(kv: KvLike): Store {
+  const key = (id: string) => `csv_uploads_v1:${id}`;
+  return {
+    async save(filename, raw) {
+      const id = newId();
+      const upload: StoredUpload = { id, filename, raw, overrides: {} };
+      await kv.set(key(id), upload, { ex: TTL_SECONDS });
+      return id;
+    },
+    async get(id) {
+      return await kv.get<StoredUpload>(key(id));
+    },
+    async setOverrides(id, overrides) {
+      const existing = await kv.get<StoredUpload>(key(id));
+      if (!existing) return;
+      await kv.set(key(id), { ...existing, overrides }, { ex: TTL_SECONDS });
+    },
+  };
+}
+
 export function memoryStore(): Store {
   const m = new Map<string, StoredUpload>();
   return {
