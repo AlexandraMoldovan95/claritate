@@ -1,62 +1,76 @@
-# CLAUDE.md — Dashboard din CSV (Claritate)
+# CLAUDE.md — Dashboard din CSV/Excel (Claritate)
 
-Scris înainte de cod. Citește-l la începutul fiecărei sesiuni. Detaliile de design sunt în `DESIGN.md`, planul pe piese în `PLAN.md`, cerința inițială în `materiale-referinta/brief.md`, plugin-urile în `materiale-referinta/PLUGINURI.md`.
+Citește-l la începutul fiecărei sesiuni. Detaliile de design sunt în `DESIGN.md`, planul inițial pe piese în `PLAN.md` (istoric — scris pentru versiunea Val Town), cerința inițială în `materiale-referinta/brief.md`, plugin-urile originale în `materiale-referinta/PLUGINURI.md`.
+
+**Status: live pe Vercel.** https://claritate.vercel.app — construit inițial pe Val Town, migrat integral pe Vercel când Val Town s-a închis. Migrarea și tot ce s-a schimbat față de varianta Val Town (runtime, rute, stocare) sunt documentate pe larg în `README-VERCEL.md`; secțiunile de mai jos descriu **starea curentă**, nu varianta originală.
 
 ## Ce construim
 
-O aplicație web publică (merge și pe telefon) în care urci un CSV și primești automat:
+O aplicație web publică (merge și pe telefon) în care urci un fișier **CSV sau Excel** (`.xlsx`/`.xlsm`/`.xls`) și primești automat:
 1. structura detectată și datele curățate (cu raport despre ce s-a eliminat și de ce);
 2. **6 dashboard-uri** cu cifre cheie, tabele și grafice;
 3. un câmp în care pui o întrebare în română despre date și primești răspuns.
 
 ## Cerințe de produs (nenegociabile)
 
-- **Trebuie să meargă cu orice CSV**, nu doar cu cele 4 din folder. Coloanele pot fi în orice ordine și pot lipsi.
-- **Nu se blochează pe date neconforme**: rânduri goale, sume scrise ca text, același nume scris în trei feluri, rânduri de total intercalate.
-- **Modelul nu calculează numere.** El alege *ce* se calculează; codul face aritmetica.
-- Livrabile: `PLAN.md` (10 rânduri, scris înainte de cod) + linkul aplicației.
+- **Trebuie să meargă cu orice CSV sau Excel**, nu doar cu cele 4 din folder. Coloanele pot fi în orice ordine, pot lipsi, pot fi în orice limbă — detectarea e după conținut, nu după un șablon fix. Verificat explicit cu fișiere reordonate/redenumite (vezi `scripts/validate-shapes.ts`).
+- **Nu se blochează pe date neconforme**: rânduri goale, sume scrise ca text, același nume scris în trei feluri, rânduri de total intercalate (în orice coloană, nu doar prima).
+- **Modelul nu calculează numere.** El alege *ce* se calculează; codul face aritmetica. (Pe Vercel nu e conectat niciun model — vezi mai jos.)
+- Livrabile: `PLAN.md` (10 rânduri, scris înainte de cod, istoric) + linkul aplicației.
 
 ## Decizii de produs
 
 | Decizie | Ce am ales | De ce |
 |---|---|---|
-| Hosting | **Val Town** (cont gratuit) | Alegere inițială; server + SQLite + link public, fără Netlify (fără credite acolo). |
-| Întrebări în română | **`std/openai` din Val Town**, fără cheie API proprie | Val Town oferă gratuit modele mici (ex. `gpt-5.4-nano`) fără cheie. Respectă „modelul alege, codul calculează”. |
+| Hosting | **Vercel** (migrat de pe Val Town) | Val Town s-a închis. Cod fără build step (`backend/core/*` nu s-a schimbat deloc), funcție serverless Node.js + fișiere statice pe CDN. Detalii și probleme întâlnite în `README-VERCEL.md`. |
+| Format fișiere | **CSV și Excel** (`.xlsx`/`.xlsm`/`.xls`) | Un angajator care testează aplicația cu propriile date are șanse mari să aibă un Excel, nu un CSV. Detectat după extensie **și** după semnătura reală a fișierului (octeții ZIP/OLE), ca să prindem și fișiere redenumite greșit. |
+| Pachetul de citit Excel | **SheetJS de pe CDN-ul lor oficial** (`xlsx@0.20.3`), nu versiunea de pe npm (`0.18.5`) | Versiunea de pe npm are 2 vulnerabilități cunoscute, de severitate mare (poluare de prototip, ReDoS), nereparate acolo — relevante exact aici, unde oricine poate urca un fișier. |
+| Întrebări în română | **Planificator pe reguli** (`rulePlan`), fără model AI | Pe Val Town folosea `std/openai` gratuit, fără cheie. Pe Vercel nu există echivalent gratuit; nu s-a adăugat o cheie plătită, deci întrebările merg mereu prin reguli — funcționează, înțelege mai puține formulări decât modelul. |
 | Denumiri | **Venit livrat / Venit pierdut** | CSV-urile nu au costuri, deci nu există „profit” sau „pierdere” contabilă. „Pierdut” = Retur + Anulată. |
-| Chei API | **Niciuna în cod sau în repo** | Nu avem nevoie; `std/openai` se autentifică prin contul Val Town. |
+| Chei API | **Niciuna în cod sau în repo** | Stocarea (Upstash Redis) se autentifică prin variabile de mediu puse automat de integrarea Vercel. |
 
 ## Stack și structură
 
-- **Val Town**, un singur proiect (HTTP val), TypeScript pe Deno, router **Hono**.
-- **SQLite** (`https://esm.town/v/std/sqlite`) — stochează upload-urile și rezultatele.
-- **Model**: `https://esm.town/v/std/openai/main.ts`, model mic (`gpt-5.4-nano`), `max_completion_tokens` mic, `response_format` JSON.
-- **Frontend**: HTML + CSS + JS vanilla servite de același val, fără build step. Grafice **SVG desenate în `app.js`** (fără Chart.js/CDN), redimensionate la lățimea cardului; paleta de status validată cu scriptul dataviz (`#059669` Livrată, `#4F46E5` În curs, `#D97706` Retur, `#E11D48` Anulată). Font **Plus Jakarta Sans**.
+- **Vercel**, funcție serverless **Node.js** (nu Edge — pe Edge, rutele catch-all cu 2+ segmente sub `/api/...` dădeau 404 direct de la platformă, pe orice proiect fără framework; vezi `README-VERCEL.md`), TypeScript, router **Hono**, pachete npm.
+- **Stocare**: Upstash Redis (prin integrarea Vercel Marketplace) — `vercelKvStore()` din `backend/db.ts`. TTL 90 de zile per upload.
+- **Model**: niciunul conectat — `backend/core/ask.ts` răspunde mereu prin `rulePlan` (planificatorul pe reguli).
+- **Excel**: `xlsx` (SheetJS, de pe CDN-ul lor, nu npm) — prima foaie cu date e convertită în text CSV înainte să intre în pipeline-ul existent (`backend/app.ts`, `spreadsheetToCsv()`), care rămâne neschimbat.
+- **Frontend**: HTML + CSS + JS vanilla, servite ca fișiere statice din `public/` (CDN Vercel, nu prin funcție). Grafice **SVG desenate în `app.js`** (fără Chart.js/CDN), redimensionate la lățimea cardului; paleta de status validată cu scriptul dataviz (`#059669` Livrată, `#4F46E5` În curs, `#D97706` Retur, `#E11D48` Anulată). Font **Plus Jakarta Sans**.
 
 ```
-main.ts                     HTTP val (Val Town): leagă aplicația de std/sqlite, std/openai, std/utils
-dev.ts                      server local pentru teste (stocare în memorie, fără model → doar reguli)
-deno.json                   `deno task dev` (local, port 8787) · `deno task test`
-backend/app.ts              rutele Hono; nu depinde de Val Town (stocarea și modelul vin din afară)
-backend/db.ts               tabelul SQLite `csv_uploads_v1` + variantă în memorie
+api/[...route].ts           funcția Node.js (Vercel) — punctul de intrare activ
+api/_examples.generated.ts  cele 4 CSV-uri demo, embedate (nu are sens pe Vercel să citim de pe disc la fiecare request)
+backend/app.ts              rutele Hono + detectarea/conversia fișierelor Excel înainte de analyze()
+backend/db.ts                vercelKvStore() (activ, Upstash Redis) · sqliteStore()/memoryStore() (istoric/teste locale)
 backend/core/csv.ts         citire CSV robustă (ghilimele, separator , ; tab |, CRLF, BOM)
 backend/core/normalize.ts   numere RO/EN, date, statusuri, monede
-backend/core/detect.ts      găsește rândul de antet + rolul fiecărei coloane
+backend/core/detect.ts      găsește rândul de antet + rolul fiecărei coloane (independent de ordine/nume)
 backend/core/clean.ts       curățare deterministă + raport de rânduri eliminate
 backend/core/aggregate.ts   cele 6 dashboard-uri (doar aritmetică în cod)
 backend/core/analyze.ts     pipeline complet: text → analiză + rânduri curate
-backend/core/ask.ts         întrebare → plan JSON (model sau reguli) → validare → calcul (cod)
-frontend/index.html         pagina (upload, dashboard-uri, întrebări)
-frontend/app.js             UI + grafice SVG (textContent peste tot, niciun innerHTML cu date)
-frontend/styles.css         token-uri din DESIGN.md
-tests/core_test.ts          8 teste Deno: cifrele de referință, CSV sintetic neconform, plan invalid
-examples/                   cele 4 seturi de date demo, servite ca „încearcă un exemplu”
+backend/core/ask.ts         întrebare → plan JSON (reguli, fără model) → validare → calcul (cod)
+public/                     fișiere statice servite direct de Vercel: index.html, frontend/, examples/, og.jpg
+vercel.json                 rewrite /d/:id → /index.html, ca linkurile de dashboard partajate să funcționeze
+scripts/smoke-test.ts              backend/app.ts + db.ts rulează corect sub Node real cu hono din npm
+scripts/smoke-test-node-handler.ts simulează exact invocarea Vercel (http.createServer + getRequestListener)
+scripts/validate-shapes.ts         CSV-uri cu coloane în altă ordine/denumire/mai puține sau mai multe — fără model fix
+scripts/validate-xlsx.ts           un .xlsx real (nu CSV redenumit), cu mai multe foi, date/numere native Excel
+scripts/validate-upload-xlsx.ts    /api/upload cu .xlsx prin multipart, inclusiv fișier fără extensia corectă în nume
+tests/core_test.ts          8 teste Deno (istoric, Val Town): cifrele de referință, CSV sintetic neconform, plan invalid
+PLAN.md · CLAUDE.md · DESIGN.md · docs/ · README.md · README-VERCEL.md
+
+main.ts · dev.ts · deno.json · examples/ · frontend/   varianta originală Val Town/Deno — păstrate ca istoric,
+                                                          nu mai rulează (backend/app.ts importă acum "hono" din npm,
+                                                          nu "npm:hono" specific Deno); public/ e copia activă
 ```
 
-Rute: `GET /` (pagina), `POST /api/upload` (multipart, max 5 MB), `GET /api/d/:id` (rezultatul unui upload), `POST /api/d/:id/ask` (întrebare), `GET /d/:id` (link de partajat către un dashboard), `GET /examples/:name`, `POST /api/d/:id/roles` (corectarea manuală a rolului unei coloane).
+Rute active: `GET /` (pagina), `POST /api/upload` (multipart sau JSON, CSV **sau** Excel, max 5 MB), `GET /api/view?id=` (rezultatul unui upload), `POST /api/set-roles?id=` (corectarea manuală a rolului unei coloane), `POST /api/ask?id=` (întrebare), `GET /d/:id` (link de partajat, rescris către `/index.html`), `GET /api/examples`, `GET /examples/:name`, `GET /api/roles`.
+
+**De ce `?id=` și nu `/api/view/:id`:** pe Vercel, orice rută `/api/...` cu 2+ segmente de path dădea 404 direct de la platformă, înainte să ajungă la funcție — indiferent de runtime sau de configurarea din `vercel.json`. Cauza exactă nu a fost găsită după o investigație extinsă; rutele cu un singur segment sub `/api/...` au mers mereu fără probleme, deci id-ul dashboard-ului s-a mutat din path în query string. Detalii în `README-VERCEL.md`.
 
 ## Datele de test (ce neconformități există în realitate)
 
-4 fișiere în folder: `vanzari_2026.csv`, `vanzari_distributie_2026.csv`, `vanzari_enterprise_b2b_2026.csv`, `vanzari_servicii_cloud_2026.csv`. Toate au aceleași 8 coloane — `Nr comanda, Data, Client, Produs, Cantitate, Pret unitar, Valuta, Status` — dar **în ordine diferită** în fiecare fișier. Probleme găsite:
+4 fișiere CSV în `examples/`: `vanzari_2026.csv`, `vanzari_distributie_2026.csv`, `vanzari_enterprise_b2b_2026.csv`, `vanzari_servicii_cloud_2026.csv`. Toate au aceleași 8 coloane — `Nr comanda, Data, Client, Produs, Cantitate, Pret unitar, Valuta, Status` — dar **în ordine diferită** în fiecare fișier. Probleme găsite:
 
 - 3 rânduri de preambul narativ (`EXPORT VANZARI — sistem intern`, `Perioada: …`, `Generat automat…`) + un rând gol înainte de antet;
 - rânduri `TOTAL PARTIAL` și `TOTAL GENERAL` intercalate (au sumă, dar nu sunt comenzi);
@@ -68,9 +82,14 @@ Rute: `GET /` (pagina), `POST /api/upload` (multipart, max 5 MB), `GET /api/d/:i
 - două monede în același fișier (RON, EUR); `Pret unitar` e preț pe bucată, nu valoarea comenzii;
 - CRLF într-un fișier, LF în celelalte.
 
+**Teste adăugate ulterior**, pentru cazuri pe care cele 4 fișiere nu le acopereau (`scripts/validate-shapes.ts`, `validate-xlsx.ts`):
+- coloane în altă ordine, denumite altfel (inclusiv în engleză), mai puține sau mai multe decât cele 8 din fișierele demo, inclusiv fără coloană de client/produs/status/monedă;
+- un `.xlsx` real cu 2 foi (prima aproape goală — testează alegerea automată a foii cu date), cu celule native Excel de tip Dată și Număr (nu text), rând gol/duplicat/total intercalate;
+- un rând de total cu eticheta în **ultima** coloană (nu prima) — a scos la iveală un bug real în `clean.ts` (vezi secțiunea de curățare de mai jos), reparat.
+
 ## Detectarea structurii (`detect.ts`)
 
-1. **Rândul de antet** = primul rând cu ≥ 2 celule nevide, majoritatea non-numerice, urmat de rânduri cu același număr de coloane. Totul înainte e preambul (păstrat ca „titlu/perioadă” dacă arată ca atare).
+1. **Rândul de antet** = primul rând cu ≥ 2 celule nevide, majoritatea non-numerice, urmat de rânduri cu o lățime compatibilă. Totul înainte e preambul (păstrat ca „titlu/perioadă” dacă arată ca atare).
 2. **Separator**: `,` sau `;` (sau tab) — cel care dă cel mai constant număr de coloane pe primele 20 de rânduri.
 3. **Rolul coloanelor** — întâi după nume (normalizat: fără diacritice, lowercase), apoi confirmat după conținut:
 
@@ -87,11 +106,18 @@ Rute: `GET /` (pagina), `POST /api/upload` (multipart, max 5 MB), `GET /api/d/:i
 
 Dacă numele nu spune nimic, rolul se deduce din conținut. Utilizatorul vede rolurile detectate și le poate corecta dintr-un dropdown (recalculare imediată).
 
+## Format Excel (`.xlsx`/`.xlsm`/`.xls`)
+
+- Detectat în `backend/app.ts` prin extensie **și** prin semnătura fișierului (ZIP pentru `.xlsx`/`.xlsm`, OLE/CFB pentru `.xls`) — merge și dacă fișierul e redenumit greșit sau trimis fără extensie corectă.
+- Se alege automat **prima foaie cu cel puțin 2 rânduri de date** (sare peste o foaie de tip „instrucțiuni”/copertă, dacă prima foaie e goală sau are un singur rând).
+- Foaia aleasă e convertită în text CSV (`XLSX.utils.sheet_to_csv`) **înainte** să intre în `analyze()` — restul pipeline-ului (detectare, curățare, agregare) nu știe și nu trebuie să știe că fișierul original era Excel.
+- Celulele native Excel de tip Dată/Număr ies din conversie ca text ISO/simplu (`2026-02-03`, `125.5`), nu ca text murdar — deci curățarea le vede chiar mai curate decât un CSV scris de mână.
+
 ## Curățare (`clean.ts`) — deterministă, în ordinea asta
 
 1. Trim pe fiecare celulă; `""`, `-`, `N/A` → gol.
 2. Elimină rândurile complet goale.
-3. Elimină rândurile de total: prima celulă nevidă conține `total`, `subtotal`, `sumar`, `grand total` (fără diacritice, orice majuscule) **sau** rândul are doar sumă și restul gol.
+3. Elimină rândurile de total: eticheta (`total`, `subtotal`, `sumar`, `grand total`, fără diacritice, orice majuscule) apare în **orice coloană de id sau categorie**, nu neapărat prima celulă din rând — poziția ei depinde de ordinea coloanelor, care diferă de la un export la altul. **(Bug reparat:** varianta veche verifica doar prima celulă nevidă; un fișier cu coloana de ID ultima nu avea rândul de total eliminat. Scos la iveală de `scripts/validate-xlsx.ts`.) Alternativ: rândul are doar sumă și restul gol.
 4. Numere: acceptă `1.234,56`, `1,234.56`, `1234.56`, `1 234,56`, cu sau fără ghilimele/monedă; decide separatorul zecimal după ultima apariție a `,`/`.` și numărul de cifre după el.
 5. Date: `dd.mm.yyyy`, `dd/mm/yyyy`, `yyyy-mm-dd`; date invalide → rândul rămâne, dar e exclus din graficele pe lună (numărat în raport).
 6. Text categoric: spații multiple → unul, apoi o **cheie de grupare** fără diacritice/lowercase; afișarea folosește forma cea mai frecventă (ex. `Solaris Energy`). La egalitate: preferă forma care nu e toată cu minuscule sau toată cu majuscule, apoi prima apariție (ex. `Muntenia Telecom` 2× vs `muntenia telecom` 2× → `Muntenia Telecom`).
@@ -124,42 +150,43 @@ Reguli pentru dashboard-ul 4:
 
 ## Întrebări în română (`ask.ts`)
 
-1. Modelul primește **doar** întrebarea + schema: coloanele cu rolul lor, valorile distincte ale coloanelor categorice (max 50), intervalul de date, monedele. **Nu primește rândurile și nu primește cifre.**
-2. Întoarce un plan JSON strict, de forma:
+1. Dacă ar exista un model conectat, ar primi **doar** întrebarea + schema: coloanele cu rolul lor, valorile distincte ale coloanelor categorice (max 50), intervalul de date, monedele — **niciodată rândurile sau cifrele**. **Pe Vercel nu e conectat niciun model**, deci acest pas nu rulează în practică; întrebările merg direct la planificatorul pe reguli (pasul 5).
+2. Planul e un JSON strict, de forma:
    `{ "metric": "sum|count|avg|min|max|share", "field": "valoare|cantitate|<coloana>", "filters": [{ "column": "...", "op": "eq|in|between|contains", "value": ... }], "groupBy": "<coloana>|luna|null", "sort": "desc|asc", "limit": 10, "answerable": true }`
-3. Codul **validează** planul (coloane existente, operații permise; altfel „Nu pot răspunde din aceste date”), îl execută și **construiește singur propoziția** din șablon (ex. „Venitul livrat de la Solaris Energy în martie 2026: RON 12.345,67”), plus tabelul folosit. Utilizatorul vede și planul („Am calculat: suma valorii, filtrat pe…”) — transparent.
-4. **Plasă de siguranță** (`guardPlan`): dacă planul modelului contrazice ce scrie explicit în întrebare, codul îl corectează înainte de calcul — statusul cerut („retururi” = doar Retur, „anulări” = doar Anulată, „pierdut” = ambele) și „cel mai / cea mai …” = o singură grupă (cu egalitățile păstrate), „cea mai bună/slabă lună” = după venit livrat. Motiv: live, `gpt-5.4-nano` a răspuns la „cea mai slabă lună” cu toate lunile, fără status, și la „retururi” a adăugat și Anulată. Testat în `tests/core_test.ts`.
-5. Model indisponibil / limită atinsă (10 cereri/minut pe planul gratuit) → trece automat pe planificatorul pe reguli (`rulePlan`); sub răspuns scrie „plan ales de: model” sau „reguli”, iar în logurile Val Town apare `[ask] model … a întors planul` sau `[ask] model indisponibil`.
-6. **Orice CSV:** schema trimisă modelului conține și numele real al coloanei numerice (`"column": "Nota"` lângă `valoare`); planurile care folosesc numele real sunt acceptate, iar răspunsul afișează numele real („Media (Nota)”). Dacă modelul zice „nu se poate”, dar regulile înțeleg întrebarea, răspund regulile. Testat live pe un CSV de note școlare.
+3. Codul **validează** planul (coloane existente, operații permise; altfel „Nu pot răspunde din aceste date”), îl execută și **construiește singur propoziția** din șablon (ex. „Venitul livrat de la Solaris Energy în martie 2026: RON 12.345,67”), plus tabelul folosit. Utilizatorul vede și planul — transparent.
+4. **Plasă de siguranță** (`guardPlan`): dacă planul (de la model, când era conectat pe Val Town) contrazice ce scrie explicit în întrebare, codul îl corectează înainte de calcul — statusul cerut („retururi” = doar Retur, „anulări” = doar Anulată, „pierdut” = ambele) și „cel mai / cea mai …” = o singură grupă, „cea mai bună/slabă lună” = după venit livrat. Cod păstrat și activ (se aplică și planurilor din `rulePlan`), chiar fără model conectat acum.
+5. **Pe Vercel, mereu `rulePlan`** (planificatorul pe reguli, fără model): înțelege mai puține formulări decât modelul de pe Val Town, dar garantează același lucru — codul calculează, nu modelul. Sub răspuns scrie „plan ales de: reguli”.
+6. **Orice CSV/Excel:** schema conține și numele real al coloanei numerice (ex. `"column": "Nota"` lângă `valoare`); planul pe reguli înțelege și denumiri reale de coloană, nu doar „valoare”/„cantitate”. Testat live pe un CSV de note școlare.
 
 ## Securitate și robustețe
 
-- Fără chei API în cod. Toate interogările SQLite parametrizate.
-- **Tot textul din CSV e escapat** înainte de afișare (CSV-ul poate conține HTML/JS).
-- Limită 5 MB / 50.000 rânduri; fișier ne-CSV → mesaj prietenos, nu eroare 500.
+- Fără chei API în cod. Stocarea (Upstash Redis) se autentifică prin variabile de mediu Vercel.
+- **Tot textul din fișier e escapat** înainte de afișare (fișierul poate conține HTML/JS).
+- Limită 5 MB / 50.000 rânduri; fișier nerecunoscut (nici CSV, nici Excel valid) → mesaj prietenos, nu eroare 500.
+- **Parsarea Excel folosește `xlsx@0.20.3` de pe CDN-ul SheetJS, nu versiunea de pe npm** (`0.18.5`, cu 2 vulnerabilități de severitate mare nereparate acolo) — relevant pentru că aplicația parsează fișiere urcate de public. Dacă se actualizează pachetul, verifică din nou sursa (npm vs CDN-ul lor).
 - Datele urcate sunt vizibile oricui are linkul `/d/:id` — spus clar în UI („Nu urca date confidențiale”).
 
 ## Design
 
 Stilul „**Corporate Trust**” din `materiale-referinta/design-system.md`, adaptat pentru HTML/CSS vanilla în `DESIGN.md`. Mobil întâi (375px), fără scroll orizontal, ținte tactile ≥ 44px, contrast WCAG AA, `prefers-reduced-motion` respectat.
 
-## Plugin-uri — cine ce folosește
+## Plugin-uri — cine ce folosește (versiunea originală, Val Town)
 
-Codul e scris cu Claude (Cowork) în acest folder; plugin-urile rulează local, în **Claude Code**.
+Codul original a fost scris cu Claude (Cowork) în acest folder; plugin-urile au rulat local, în **Claude Code**. Migrarea pe Vercel și suportul Excel au fost făcute direct în Claude (Cowork), fără plugin-uri.
 
 | Plugin | Marketplace | Pentru ce |
 |---|---|---|
-| `valtown` | `claude-plugins-official` | creare val, SQLite, deploy, loguri |
+| `valtown` | `claude-plugins-official` | creare val, SQLite, deploy, loguri (versiunea originală, acum închisă) |
 | `data` | `knowledge-work-plugins` (`anthropics/knowledge-work-plugins`) | `/data:explore-data`, `/data:validate-data` pe CSV-uri (rezultatele salvate în `docs/`) |
-| `impeccable` | `pbakaus/impeccable` | audit design/accesibilitate pe linkul live |
-
-În README se trec doar plugin-urile folosite efectiv, cu ce a făcut fiecare concret.
+| `impeccable` | `pbakaus/impeccable` | audit design/accesibilitate pe linkul live (Val Town) |
 
 ## Definiția de „gata”
 
-- [x] Link public Val Town, merge pe telefon (375px, fără scroll orizontal) — https://claritate.val.run
-- [x] Cele 4 seturi de date demo + 1 CSV neconform inventat (`;`, format EN, fără status, coloane lipsă) dau dashboard-uri corecte, fără erori
-- [x] Totalurile verificate independent (script separat) pe cel puțin 2 fișiere — `tests/core_test.ts` compară cu `docs/`
-- [x] Nicio cifră din răspunsuri nu vine de la model (modelul întoarce doar un plan JSON; testat și cu un plan invalid)
-- [x] Impeccable rulat, problemele reale reparate (15/20 înainte; ținte 44px, contrast AA, titluri h1→h2)
-- [x] `README.md` (prezentare + plugin-uri)
+- [x] Link public, merge pe telefon (375px, fără scroll orizontal) — https://claritate.vercel.app (inițial Val Town, migrat pe Vercel)
+- [x] Cele 4 seturi de date demo + CSV-uri neconforme inventate (`;`, format EN, fără status, coloane lipsă, ordine diferită) dau dashboard-uri corecte, fără erori
+- [x] Totalurile verificate independent (script separat) pe cel puțin 2 fișiere
+- [x] Nicio cifră din răspunsuri nu vine de la model (planificatorul pe reguli calculează tot; codul validator rămâne pregătit și pentru un plan de model, dacă se adaugă vreodată o cheie)
+- [x] Impeccable rulat, problemele reale reparate (15/20 înainte; ținte 44px, contrast AA, titluri h1→h2) — versiunea Val Town
+- [x] Suport pentru fișiere Excel (`.xlsx`/`.xlsm`/`.xls`), verificat cu un fișier real, multi-foaie, pe producție
+- [x] Detectarea coloanelor confirmată independentă de template (ordine/denumire/nr. de coloane) cu teste automate
+- [x] `README.md` + `README-VERCEL.md` (prezentare, arhitectură curentă, istoric migrare)
