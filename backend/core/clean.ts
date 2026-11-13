@@ -1,10 +1,10 @@
 // Curățare deterministă — fără model. Ordinea pașilor e cea din CLAUDE.md.
 
-import type { Column } from "./detect";
+import type { Column } from "./detect.js";
 import {
   detectDateOrder, detectDecimalSep, isNullish, normalizeCurrency,
   normalizeStatus, parseDate, parseNumber, textKey, tidy, type DecimalSep, type DateOrder,
-} from "./normalize";
+} from "./normalize.js";
 
 export interface CleanRecord {
   line: number;                    // linia din fișier (1-based), pentru raport

@@ -3,10 +3,10 @@
 // Val Town (SQLite + std/openai), dev.ts de variante locale pentru teste.
 
 import { Hono } from "hono";
-import { analyze, AnalysisError, MAX_BYTES } from "./core/analyze";
-import { answerQuestion, schemaFor, validatePlan } from "./core/ask";
-import { ROLE_LABELS, type Role } from "./core/detect";
-import { OG_IMAGE } from "./og_image";
+import { analyze, AnalysisError, MAX_BYTES } from "./core/analyze.js";
+import { answerQuestion, schemaFor, validatePlan } from "./core/ask.js";
+import { ROLE_LABELS, type Role } from "./core/detect.js";
+import { OG_IMAGE } from "./og_image.js";
 
 export interface StoredUpload { id: string; filename: string; raw: string; overrides: Record<string, Role> }
 

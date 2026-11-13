@@ -17,9 +17,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { getRequestListener } from "@hono/node-server";
 import { Redis } from "@upstash/redis";
-import { createApp } from "../backend/app";
-import { vercelKvStore } from "../backend/db";
-import { EXAMPLE_FILES } from "./_examples.generated";
+import { createApp } from "../backend/app.js";
+import { vercelKvStore } from "../backend/db.js";
+import { EXAMPLE_FILES } from "./_examples.generated.js";
 
 // Fara "export const config = { runtime: 'edge' }": functia ruleaza ca
 // Node.js Serverless Function (implicit pe Vercel). Motiv: pe runtime-ul Edge,

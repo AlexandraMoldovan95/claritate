@@ -1,9 +1,9 @@
 // Tot drumul: text CSV → structură → date curate → 6 dashboard-uri.
 
-import { readCsv } from "./csv";
-import { applyOverrides, detectColumns, findHeader, headerNames, pickDimensions, type Column, type Role } from "./detect";
-import { cleanRows, type CleanRecord, type CleanReport } from "./clean";
-import { buildDashboards, type Dashboards } from "./aggregate";
+import { readCsv } from "./csv.js";
+import { applyOverrides, detectColumns, findHeader, headerNames, pickDimensions, type Column, type Role } from "./detect.js";
+import { cleanRows, type CleanRecord, type CleanReport } from "./clean.js";
+import { buildDashboards, type Dashboards } from "./aggregate.js";
 
 export interface Analysis {
   meta: {

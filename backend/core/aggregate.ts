@@ -1,8 +1,8 @@
 // Cele 6 dashboard-uri. Doar aritmetică, pe fiecare monedă separat.
 
-import type { CleanRecord } from "./clean";
-import { round2 } from "./clean";
-import { lastDayOfMonth } from "./normalize";
+import type { CleanRecord } from "./clean.js";
+import { round2 } from "./clean.js";
+import { lastDayOfMonth } from "./normalize.js";
 
 export interface Ranked { name: string; value: number; count: number; share: number }
 type PerCur<T> = Record<string, T>;
