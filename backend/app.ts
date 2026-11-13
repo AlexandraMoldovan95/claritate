@@ -112,14 +112,17 @@ export function createApp(deps: Deps) {
     return await deps.store.get(id);
   };
 
-  app.get("/api/d/:id", async (c) => {
+  // Notă: ruta era "/api/view/:id" dar pe Vercel intra în conflict cu rescrierea
+  // "/d/:id" -> "/index.html" din vercel.json (platforma părea să o potrivească
+  // greșit, cu NOT_FOUND la nivel de Vercel, nu de aplicație) — redenumită "/api/view/:id".
+  app.get("/api/view/:id", async (c) => {
     const up = await load(c.req.param("id"));
     if (!up) return c.json({ error: "Nu am găsit acest dashboard. Poate linkul e greșit." }, 404);
     const { analysis } = analyze(up.raw, up.filename, up.overrides);
     return c.json({ id: up.id, analysis });
   });
 
-  app.post("/api/d/:id/roles", async (c) => {
+  app.post("/api/view/:id/roles", async (c) => {
     const up = await load(c.req.param("id"));
     if (!up) return c.json({ error: "Nu am găsit acest dashboard." }, 404);
     const body = await c.req.json().catch(() => ({})) as { overrides?: Record<string, string> };
@@ -132,7 +135,7 @@ export function createApp(deps: Deps) {
     return c.json({ id: up.id, analysis });
   });
 
-  app.post("/api/d/:id/ask", async (c) => {
+  app.post("/api/view/:id/ask", async (c) => {
     const up = await load(c.req.param("id"));
     if (!up) return c.json({ error: "Nu am găsit acest dashboard." }, 404);
     const body = await c.req.json().catch(() => ({})) as { question?: string };
