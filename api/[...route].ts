@@ -19,8 +19,6 @@ import { createApp } from "../backend/app";
 import { vercelKvStore } from "../backend/db";
 import { EXAMPLE_FILES } from "./_examples.generated";
 
-export const config = { runtime: "edge" };
-
 // Redis.fromEnv() cauta UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN - numele
 // pe care integrarea "Upstash" din Vercel Marketplace le pune automat. Daca in
 // Vercel apar sub alt nume (ex. un KV_REST_API_URL ramas de la vechiul Vercel KV),
