@@ -1,10 +1,5 @@
 {
   "rewrites": [
     { "source": "/d/:id", "destination": "/index.html" }
-  ],
-  "functions": {
-    "api/[...route].ts": {
-      "includeFiles": "backend/**"
-    }
-  }
+  ]
 }
