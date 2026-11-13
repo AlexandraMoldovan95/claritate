@@ -20,23 +20,22 @@ const port = typeof address === "object" && address ? address.port : 0;
 const base = `http://127.0.0.1:${port}`;
 
 try {
-  // 1 segment (asta mergea si pe Edge)
   const roles = await fetch(`${base}/api/roles`);
-  assert(roles.status === 200, `GET /api/roles (1 segment) status 200 (got ${roles.status})`);
+  assert(roles.status === 200, `GET /api/roles status 200 (got ${roles.status})`);
 
-  // 2 segmente, pe o ruta care NU exista in Hono -> daca ajunge la Hono, primim
-  // 404 de la APLICATIA noastra (JSON {error}), nu 404 de la platforma Vercel.
-  // Asta era exact simptomul de pe Vercel: cererea nici nu ajungea la functie.
-  const missing2 = await fetch(`${base}/api/roles/foo`);
-  assert(missing2.status === 404, `GET /api/roles/foo (2 segmente) ajunge la Hono => 404 (got ${missing2.status})`);
-
-  // 3 segmente, tot pe o ruta inexistenta
+  // Rutele /api/view, /api/set-roles, /api/ask iau id-ul din query string,
+  // nu din path (vezi comentariul din backend/app.ts - orice ruta /api/...
+  // cu 2+ segmente de path primea 404 direct de la platforma Vercel, deci
+  // am mutat id-ul in query ca sa ramanem mereu pe un singur segment).
   // id "x" nu trece regexul de id (prea scurt) -> load() intoarce null fara
-  // sa atinga Redis, deci testul asta nu are nevoie de UPSTASH_REDIS_REST_URL.
-  const missing3 = await fetch(`${base}/api/view/x/ask`, { method: "POST" });
-  assert(missing3.status === 404 || missing3.status === 400, `POST /api/view/x/ask (3 segmente) ajunge la Hono (got ${missing3.status})`);
+  // sa atinga Redis, deci testele astea nu au nevoie de UPSTASH_REDIS_REST_URL.
+  const view = await fetch(`${base}/api/view?id=x`);
+  assert(view.status === 404, `GET /api/view?id=x ajunge la Hono => 404 (got ${view.status})`);
 
-  console.log("\nRutarea pe mai multe segmente ajunge corect la functie sub Node.js (http.createServer).");
+  const ask = await fetch(`${base}/api/ask?id=x`, { method: "POST" });
+  assert(ask.status === 404, `POST /api/ask?id=x ajunge la Hono => 404 (got ${ask.status})`);
+
+  console.log("\nRutele /api/view, /api/ask (id ca query param) ajung corect la functie sub Node.js (http.createServer).");
   console.log("(Testele cu Redis real raman pentru verificarea live pe Vercel, unde avem UPSTASH_REDIS_REST_URL/TOKEN.)");
 } finally {
   server.close();

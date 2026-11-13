@@ -30,10 +30,10 @@ console.log("analysis keys:", Object.keys(upBody.analysis ?? {}));
 console.log(JSON.stringify(upBody.analysis).slice(0, 500));
 const id = upBody.id;
 
-const get = await app.request(`/api/view/${id}`);
-assert(get.status === 200, "GET /api/view/:id status 200");
+const get = await app.request(`/api/view?id=${id}`);
+assert(get.status === 200, "GET /api/view?id=... status 200");
 
-const ask = await app.request(`/api/view/${id}/ask`, {
+const ask = await app.request(`/api/ask?id=${id}`, {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({ question: "Care a fost cea mai slabă lună?" }),
@@ -44,7 +44,7 @@ assert(askBody.source === "reguli", `fără planner => sursa e "reguli" (got ${a
 assert(!!askBody.answer, "ask a primit un răspuns, nu doar o eroare");
 console.log("Răspuns:", JSON.stringify(askBody.answer).slice(0, 200));
 
-const badId = await app.request("/api/view/nuexista123");
+const badId = await app.request("/api/view?id=nuexista123");
 assert(badId.status === 404, `id inexistent => 404 (got ${badId.status})`);
 
 const badUpload = await app.request("/api/upload", {

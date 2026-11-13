@@ -133,7 +133,7 @@
 
   async function loadById(id) {
     setStatus("Deschid dashboard-ul…", "loading");
-    try { show(await api(`/api/view/${encodeURIComponent(id)}`), false); }
+    try { show(await api(`/api/view?id=${encodeURIComponent(id)}`), false); }
     catch (e) { setStatus(e.message, "error"); history.replaceState(null, "", "/"); }
   }
 
@@ -215,7 +215,7 @@
     for (const c of state.analysis.columns) if (c.detectedBy === "manual") overrides[c.index] = c.role;
     overrides[index] = role;
     try {
-      const data = await api(`/api/view/${state.id}/roles`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ overrides }) });
+      const data = await api(`/api/set-roles?id=${encodeURIComponent(state.id)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ overrides }) });
       const wasOpen = $("#structureCard").open;
       show(data, false);
       $("#structureCard").open = wasOpen;
@@ -641,7 +641,7 @@
     const out = $("#answer");
     out.replaceChildren(el("span", { class: "loading" }, [el("span", { class: "spinner", "aria-hidden": "true" }), "Calculez…"]));
     try {
-      const res = await api(`/api/view/${state.id}/ask`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question }) });
+      const res = await api(`/api/ask?id=${encodeURIComponent(state.id)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question }) });
       out.replaceChildren();
       if (res.error || !res.answer) {
         out.append(emptyState(res.error || "Nu pot răspunde la asta din acest fișier."));

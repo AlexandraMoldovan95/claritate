@@ -112,18 +112,23 @@ export function createApp(deps: Deps) {
     return await deps.store.get(id);
   };
 
-  // Notă: ruta era "/api/view/:id" dar pe Vercel intra în conflict cu rescrierea
-  // "/d/:id" -> "/index.html" din vercel.json (platforma părea să o potrivească
-  // greșit, cu NOT_FOUND la nivel de Vercel, nu de aplicație) — redenumită "/api/view/:id".
-  app.get("/api/view/:id", async (c) => {
-    const up = await load(c.req.param("id"));
+  // Notă: rutele erau "/api/view/:id", "/api/view/:id/roles", "/api/view/:id/ask"
+  // dar pe Vercel orice rută din /api/... cu 2+ segmente primea 404 direct de la
+  // platformă, înainte să ajungă la funcție — indiferent de runtime (Edge/Node),
+  // de numele exact al rutei, sau de rescrierile din vercel.json (cauza exactă a
+  // rămas neclară după o investigație extinsă). Rutele cu UN singur segment sub
+  // /api/... au mers tot timpul fără probleme, deci am rescris id-ul ca query
+  // param în loc de segment de path, ca să evităm complet problema:
+  // "/api/view?id=...", "/api/set-roles?id=...", "/api/ask?id=...".
+  app.get("/api/view", async (c) => {
+    const up = await load(c.req.query("id") ?? "");
     if (!up) return c.json({ error: "Nu am găsit acest dashboard. Poate linkul e greșit." }, 404);
     const { analysis } = analyze(up.raw, up.filename, up.overrides);
     return c.json({ id: up.id, analysis });
   });
 
-  app.post("/api/view/:id/roles", async (c) => {
-    const up = await load(c.req.param("id"));
+  app.post("/api/set-roles", async (c) => {
+    const up = await load(c.req.query("id") ?? "");
     if (!up) return c.json({ error: "Nu am găsit acest dashboard." }, 404);
     const body = await c.req.json().catch(() => ({})) as { overrides?: Record<string, string> };
     const overrides: Record<string, Role> = {};
@@ -135,8 +140,8 @@ export function createApp(deps: Deps) {
     return c.json({ id: up.id, analysis });
   });
 
-  app.post("/api/view/:id/ask", async (c) => {
-    const up = await load(c.req.param("id"));
+  app.post("/api/ask", async (c) => {
+    const up = await load(c.req.query("id") ?? "");
     if (!up) return c.json({ error: "Nu am găsit acest dashboard." }, 404);
     const body = await c.req.json().catch(() => ({})) as { question?: string };
     const question = String(body.question ?? "").trim().slice(0, 300);
