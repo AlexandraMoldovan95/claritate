@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@hono/node-server": "^2.1.8",
     "@upstash/redis": "^1.41.0",
     "hono": "^4.6.14"
   },

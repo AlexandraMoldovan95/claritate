@@ -14,10 +14,21 @@
 //     4 CSV-uri demo, pentru ca POST /api/upload { example } face analiza pe server
 //     (api/_examples.generated.ts, generat din public/examples/*.csv).
 
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { getRequestListener } from "@hono/node-server";
 import { Redis } from "@upstash/redis";
 import { createApp } from "../backend/app";
 import { vercelKvStore } from "../backend/db";
 import { EXAMPLE_FILES } from "./_examples.generated";
+
+// Fara "export const config = { runtime: 'edge' }": functia ruleaza ca
+// Node.js Serverless Function (implicit pe Vercel). Motiv: pe runtime-ul Edge,
+// pentru proiecte fara framework ("Other"), Vercel nu a prins corect rutele
+// catch-all cu mai mult de un segment sub /api/... (ex. /api/view/:id/ask
+// pica mereu cu 404 la nivel de platforma, desi /api/examples mergea). Pe
+// Node.js functia primeste (req, res) brute de Node, nu un Request din Fetch
+// API, deci avem nevoie de adaptorul getRequestListener din @hono/node-server
+// ca sa-l transformam corect inainte sa-l dam lui app.fetch().
 
 // Redis.fromEnv() cauta UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN - numele
 // pe care integrarea "Upstash" din Vercel Marketplace le pune automat. Daca in
@@ -41,6 +52,8 @@ const app = createApp({
   },
 });
 
-export default function handler(request: Request) {
-  return app.fetch(request);
+const listener = getRequestListener(app.fetch);
+
+export default function handler(req: IncomingMessage, res: ServerResponse) {
+  return listener(req, res);
 }
