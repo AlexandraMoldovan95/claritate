@@ -4,7 +4,7 @@
 import {
   isNullish, looksLikeDate, looksNumeric, normalizeCurrency, normalizeStatus,
   isKnownStatus, parseDate, detectDateOrder, textKey, tidy,
-} from "./normalize.ts";
+} from "./normalize";
 
 export type Role =
   | "id" | "date" | "quantity" | "unit_price" | "amount" | "currency"

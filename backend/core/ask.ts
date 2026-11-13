@@ -3,11 +3,11 @@
 // ce coloană, ce filtre, ce grupare. Codul validează planul, calculează și scrie
 // singur propoziția. Modelul nu vede rândurile și nu scrie nicio cifră.
 
-import type { Analysis } from "./analyze.ts";
-import { monthName } from "./analyze.ts";
-import type { CleanRecord } from "./clean.ts";
-import { round2 } from "./clean.ts";
-import { textKey } from "./normalize.ts";
+import type { Analysis } from "./analyze";
+import { monthName } from "./analyze";
+import type { CleanRecord } from "./clean";
+import { round2 } from "./clean";
+import { textKey } from "./normalize";
 
 export type Metric = "sum" | "count" | "avg" | "median" | "min" | "max";
 export type Op = "eq" | "in" | "neq" | "between" | "gte" | "lte" | "contains";

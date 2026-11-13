@@ -2,8 +2,8 @@
 // Păstrăm fișierul brut + rolurile corectate manual; analiza se recalculează
 // de fiecare dată (e deterministă și rapidă), deci nu poate ieși din sincron.
 
-import type { Role } from "./core/detect.ts";
-import type { Store, StoredUpload } from "./app.ts";
+import type { Role } from "./core/detect";
+import type { Store, StoredUpload } from "./app";
 
 interface SqliteLike {
   execute(q: { sql: string; args?: (string | number | null)[] }): Promise<{ rows: unknown[][] | Record<string, unknown>[] }>;

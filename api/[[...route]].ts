@@ -1,26 +1,41 @@
 // Punctul de intrare pe Vercel (Edge Function). Echivalentul lui main.ts de pe Val Town.
-// Diferențe față de Val Town:
-//   - stocare: Vercel KV (Redis) în loc de SQLite — vezi backend/db.ts, vercelKvStore.
-//   - fără model AI: nu trimitem niciun "planner" către createApp, deci backend/core/ask.ts
-//     răspunde mereu cu planificatorul pe reguli (rulePlan), ca în dev.ts local.
-//     Când/dacă se adaugă o cheie (OpenAI/Anthropic), se scrie un planner aici și se dă
-//     la createApp — restul aplicației nu se schimbă.
-//   - fișiere statice: index.html, frontend/*, examples/*.csv și og.jpg sunt în public/,
-//     servite direct de Vercel (vezi vercel.json pentru rescrierea /d/:id → /index.html).
-//     Singurul lucru pe care tot trebuie să-l citim din interiorul funcției e textul celor
-//     4 CSV-uri demo, pentru că POST /api/upload { example } face analiza pe server
+// Diferente fata de Val Town:
+//   - stocare: Redis (Upstash, prin Vercel Marketplace) in loc de SQLite - vezi
+//     backend/db.ts, vercelKvStore. Am folosit "@vercel/kv" initial, dar e deprecat
+//     (vezi avertismentul din build); "@upstash/redis" e pachetul actual, si citeste
+//     automat variabilele de mediu puse de integrarea Vercel (Redis.fromEnv()).
+//   - fara model AI: nu trimitem niciun "planner" catre createApp, deci backend/core/ask.ts
+//     raspunde mereu cu planificatorul pe reguli (rulePlan), ca in dev.ts local.
+//     Cand/daca se adauga o cheie (OpenAI/Anthropic), se scrie un planner aici si se da
+//     la createApp - restul aplicatiei nu se schimba.
+//   - fisiere statice: index.html, frontend/*, examples/*.csv si og.jpg sunt in public/,
+//     servite direct de Vercel (vezi vercel.json pentru rescrierea /d/:id -> /index.html).
+//     Singurul lucru pe care tot trebuie sa-l citim din interiorul functiei e textul celor
+//     4 CSV-uri demo, pentru ca POST /api/upload { example } face analiza pe server
 //     (api/_examples.generated.ts, generat din public/examples/*.csv).
 
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 import { createApp } from "../backend/app";
 import { vercelKvStore } from "../backend/db";
 import { EXAMPLE_FILES } from "./_examples.generated";
 
 export const config = { runtime: "edge" };
 
+// Redis.fromEnv() cauta UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN - numele
+// pe care integrarea "Upstash" din Vercel Marketplace le pune automat. Daca in
+// Vercel apar sub alt nume (ex. un KV_REST_API_URL ramas de la vechiul Vercel KV),
+// citim si varianta aia, ca rezerva.
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL
+    ? Redis.fromEnv()
+    : new Redis({
+        url: process.env.KV_REST_API_URL!,
+        token: process.env.KV_REST_API_TOKEN!,
+      });
+
 const app = createApp({
-  store: vercelKvStore(kv),
-  // planner: omis intenționat — vezi nota de mai sus.
+  store: vercelKvStore(redis),
+  // planner: omis intentionat - vezi nota de mai sus.
   readStatic: async (path: string) => {
     const file = Object.keys(EXAMPLE_FILES).find((f) => path === `/examples/${f}`);
     if (!file) return null;
