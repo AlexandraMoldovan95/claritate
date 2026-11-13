@@ -27,7 +27,7 @@ export class AnalysisError extends Error {}
 export function analyze(text: string, filename: string, overrides?: Record<string, Role>): { analysis: Analysis; records: CleanRecord[] } {
   if (!text || !text.trim()) throw new AnalysisError("Fișierul e gol.");
   if (text.length > MAX_BYTES) throw new AnalysisError("Fișierul e prea mare (maxim 5 MB).");
-  if (/\u0000/.test(text.slice(0, 2000))) throw new AnalysisError("Nu pare un fișier text/CSV (conține date binare). Dacă e Excel, salvează-l întâi ca CSV.");
+  if (/\u0000/.test(text.slice(0, 2000))) throw new AnalysisError("Nu pare un fișier CSV sau Excel recunoscut (conține date binare). Verifică extensia fișierului (.csv, .xlsx) și dacă nu e corupt sau protejat cu parolă.");
 
   const { rows, delimiter } = readCsv(text);
   if (rows.length > MAX_ROWS + 100) throw new AnalysisError(`Fișierul are peste ${MAX_ROWS.toLocaleString("ro-RO")} de rânduri.`);

@@ -145,10 +145,13 @@ export function cleanRows(
 }
 
 function isTotalRow(cells: string[], cols: Column[]): boolean {
-  const first = cells.find((c) => c !== "");
-  if (first && TOTAL_RE.test(textKey(first))) return true;
-  // „doar sumă și restul gol”: fără ID, fără dată, fără nicio categorie, dar cu un număr
   const get = (role: Column["role"]) => cols.filter((c) => c.role === role).map((c) => cells[c.index]);
+  // eticheta „TOTAL...” poate apărea în orice coloană de identificare (id sau
+  // categorie), nu neapărat în prima celulă din rând — poziția ei depinde de
+  // ordinea coloanelor din fișier, care diferă de la un export la altul.
+  const labelValues = [...get("id"), ...get("category")].filter((v) => v !== "");
+  if (labelValues.some((v) => TOTAL_RE.test(textKey(v)))) return true;
+  // „doar sumă și restul gol”: fără ID, fără dată, fără nicio categorie, dar cu un număr
   const hasKeyInfo = [...get("id"), ...get("date"), ...get("category"), ...get("status")].some((v) => v !== "");
   const hasNumber = [...get("amount"), ...get("unit_price"), ...get("quantity")].some((v) => v !== "");
   const hasKeyColumns = cols.some((c) => ["id", "date", "category"].includes(c.role));

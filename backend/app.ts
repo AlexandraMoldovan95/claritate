@@ -3,6 +3,7 @@
 // Val Town (SQLite + std/openai), dev.ts de variante locale pentru teste.
 
 import { Hono } from "hono";
+import { read as readWorkbook, utils as xlsxUtils } from "xlsx";
 import { analyze, AnalysisError, MAX_BYTES } from "./core/analyze.js";
 import { answerQuestion, schemaFor, validatePlan } from "./core/ask.js";
 import { ROLE_LABELS, type Role } from "./core/detect.js";
@@ -89,7 +90,8 @@ export function createApp(deps: Deps) {
       if (!(file instanceof File)) return c.json({ error: "Nu am primit niciun fișier." }, 400);
       if (file.size > MAX_BYTES) return c.json({ error: "Fișierul e prea mare (maxim 5 MB)." }, 413);
       filename = file.name || filename;
-      text = await decodeText(new Uint8Array(await file.arrayBuffer()));
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      text = looksLikeSpreadsheet(filename, bytes) ? spreadsheetToCsv(bytes) : await decodeText(bytes);
     } else {
       const body = await c.req.json().catch(() => ({})) as { filename?: string; text?: string; example?: string };
       if (body.example) {
@@ -112,14 +114,14 @@ export function createApp(deps: Deps) {
     return await deps.store.get(id);
   };
 
-  // Notă: rutele erau "/api/view/:id", "/api/view/:id/roles", "/api/view/:id/ask"
-  // dar pe Vercel orice rută din /api/... cu 2+ segmente primea 404 direct de la
-  // platformă, înainte să ajungă la funcție — indiferent de runtime (Edge/Node),
-  // de numele exact al rutei, sau de rescrierile din vercel.json (cauza exactă a
-  // rămas neclară după o investigație extinsă). Rutele cu UN singur segment sub
-  // /api/... au mers tot timpul fără probleme, deci am rescris id-ul ca query
-  // param în loc de segment de path, ca să evităm complet problema:
-  // "/api/view?id=...", "/api/set-roles?id=...", "/api/ask?id=...".
+  // Notă: rutele erau "/api/d/:id" (apoi "/api/view/:id", "/api/view/:id/roles",
+  // "/api/view/:id/ask") dar pe Vercel orice rută din /api/... cu 2+ segmente
+  // primea 404 direct de la platformă, înainte să ajungă la funcție — indiferent
+  // de runtime (Edge/Node), de numele exact al rutei, sau de rescrierile din
+  // vercel.json (cauza exactă a rămas neclară după o investigație extinsă).
+  // Rutele cu UN singur segment sub /api/... au mers tot timpul fără probleme,
+  // deci am rescris id-ul ca query param în loc de segment de path, ca să evităm
+  // complet problema: "/api/view?id=...", "/api/set-roles?id=...", "/api/ask?id=...".
   app.get("/api/view", async (c) => {
     const up = await load(c.req.query("id") ?? "");
     if (!up) return c.json({ error: "Nu am găsit acest dashboard. Poate linkul e greșit." }, 404);
@@ -171,4 +173,37 @@ async function decodeText(bytes: Uint8Array): Promise<string> {
     try { return new TextDecoder("windows-1250").decode(bytes); }
     catch { return new TextDecoder("utf-8").decode(bytes); }
   }
+}
+
+// Semnătura ZIP (.xlsx/.xlsm, care sunt arhive OOXML) și semnătura OLE/CFB
+// (.xls vechi). Verificăm atât extensia cât și octeții, ca să prindem și
+// fișiere redenumite greșit sau trimise fără extensie corectă.
+const ZIP_SIG = [0x50, 0x4b];
+const OLE_SIG = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1];
+const hasSig = (bytes: Uint8Array, sig: number[]) => sig.every((b, i) => bytes[i] === b);
+
+function looksLikeSpreadsheet(filename: string, bytes: Uint8Array): boolean {
+  const ext = filename.toLowerCase().match(/\.(xlsx|xlsm|xls)$/)?.[1];
+  if (ext) return true;
+  return hasSig(bytes, ZIP_SIG) || hasSig(bytes, OLE_SIG);
+}
+
+/** Citește prima foaie nevidă dintr-un Excel (.xlsx/.xlsm/.xls) și o convertește în text CSV,
+ * ca analyze() să rămână neschimbat — vede mereu doar CSV, indiferent de formatul fișierului primit. */
+function spreadsheetToCsv(bytes: Uint8Array): string {
+  let wb;
+  try {
+    wb = readWorkbook(Buffer.from(bytes), { type: "buffer", cellDates: true });
+  } catch {
+    throw new AnalysisError("Nu am putut citi acest fișier Excel. Verifică dacă nu e corupt sau protejat cu parolă.");
+  }
+  if (!wb.SheetNames.length) throw new AnalysisError("Fișierul Excel nu are nicio foaie de calcul.");
+  const sheetName =
+    wb.SheetNames.find((name) => {
+      const rows = xlsxUtils.sheet_to_json(wb.Sheets[name], { header: 1, blankrows: false }) as unknown[][];
+      return rows.length >= 2;
+    }) ?? wb.SheetNames[0];
+  const csv = xlsxUtils.sheet_to_csv(wb.Sheets[sheetName]);
+  if (!csv.trim()) throw new AnalysisError(`Foaia „${sheetName}” din fișierul Excel pare goală.`);
+  return csv;
 }

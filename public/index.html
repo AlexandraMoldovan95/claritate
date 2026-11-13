@@ -3,26 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claritate — dashboard din orice CSV</title>
-<meta name="description" content="Urcă un CSV cu vânzări și primești automat datele curățate, 6 dashboard-uri și răspunsuri la întrebări în română.">
+<title>Claritate — dashboard din orice CSV sau Excel</title>
+<meta name="description" content="Urcă un CSV sau Excel cu vânzări și primești automat datele curățate, 6 dashboard-uri și răspunsuri la întrebări în română.">
 <meta name="theme-color" content="#4F46E5">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Claritate">
 <meta property="og:locale" content="ro_RO">
 <!-- TODO: pune aici domeniul final de pe Vercel (ex: https://claritate.vercel.app/) -->
 <meta property="og:url" content="https://claritate.vercel.app/">
-<meta property="og:title" content="Claritate — dashboard din orice CSV">
-<meta property="og:description" content="Urcă un CSV cu vânzări și primești automat datele curățate, 6 dashboard-uri și răspunsuri la întrebări în română.">
+<meta property="og:title" content="Claritate — dashboard din orice CSV sau Excel">
+<meta property="og:description" content="Urcă un CSV sau Excel cu vânzări și primești automat datele curățate, 6 dashboard-uri și răspunsuri la întrebări în română.">
 <meta property="og:image" content="https://claritate.vercel.app/og.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Claritate: urcă un CSV și primești dashboard-ul, cu un grafic al venitului livrat pe luni">
+<meta property="og:image:alt" content="Claritate: urcă un CSV sau Excel și primești dashboard-ul, cu un grafic al venitului livrat pe luni">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Claritate — dashboard din orice CSV">
-<meta name="twitter:description" content="Urcă un CSV cu vânzări și primești automat datele curățate, 6 dashboard-uri și răspunsuri la întrebări în română.">
+<meta name="twitter:title" content="Claritate — dashboard din orice CSV sau Excel">
+<meta name="twitter:description" content="Urcă un CSV sau Excel cu vânzări și primești automat datele curățate, 6 dashboard-uri și răspunsuri la întrebări în română.">
 <meta name="twitter:image" content="https://claritate.vercel.app/og.jpg">
-<meta name="twitter:image:alt" content="Claritate: urcă un CSV și primești dashboard-ul, cu un grafic al venitului livrat pe luni">
+<meta name="twitter:image:alt" content="Claritate: urcă un CSV sau Excel și primești dashboard-ul, cu un grafic al venitului livrat pe luni">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234F46E5'/%3E%3Cstop offset='1' stop-color='%237C3AED'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M9 22V15M16 22V10M23 22v-5' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +38,7 @@
       <span class="brand-mark" aria-hidden="true">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M6 19v-6M12 19V6M18 19v-9"/></svg>
       </span>
-      <span>Claritate<small>dashboard din orice CSV</small></span>
+      <span>Claritate<small>dashboard din orice CSV sau Excel</small></span>
     </a>
     <button class="btn btn-secondary" id="newFileTop" type="button" hidden>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -55,7 +55,7 @@
     <div class="container hero-grid">
       <div>
         <span class="eyebrow"><span class="dot" aria-hidden="true"></span>Fără cont, fără configurare</span>
-        <h1 id="heroTitle">Urcă un CSV. <span class="grad">Primești dashboard-ul.</span></h1>
+        <h1 id="heroTitle">Urcă un CSV sau Excel. <span class="grad">Primești dashboard-ul.</span></h1>
         <p class="lead">Claritate citește exporturi reale, cu rânduri de total, sume scrise ca text și nume scrise în trei feluri. Le curăță singură și îți arată ce contează.</p>
         <ul class="features">
           <li><span class="icon-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M10 18h4"/></svg></span><span><strong>Curățare automată și transparentă.</strong> Vezi exact ce rânduri au fost scoase și de ce.</span></li>
@@ -67,10 +67,10 @@
       <div class="upload-wrap">
         <div class="upload-card">
           <label class="dropzone" id="dropzone">
-            <input type="file" id="fileInput" accept=".csv,.txt,text/csv,text/plain" aria-describedby="dzHint">
+            <input type="file" id="fileInput" accept=".csv,.txt,.xlsx,.xlsm,.xls,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" aria-describedby="dzHint">
             <span class="dz-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></span>
             <p class="dz-title">Trage fișierul aici sau apasă ca să-l alegi</p>
-            <p class="dz-sub" id="dzHint">CSV, maxim 5 MB · separator <code>,</code> <code>;</code> sau tab · coloane în orice ordine</p>
+            <p class="dz-sub" id="dzHint">CSV sau Excel (.xlsx), maxim 5 MB · coloane în orice ordine, oricâte rânduri</p>
           </label>
           <div class="status-line" id="uploadStatus" role="status" aria-live="polite"></div>
           <div class="divider">sau încearcă un exemplu neconform</div>
@@ -146,7 +146,7 @@
 
 <footer>
   <div class="container">
-    <span>Claritate · dashboard din orice CSV</span>
+    <span>Claritate · dashboard din orice CSV sau Excel</span>
     <span>Calculele sunt făcute în cod, pe fiecare monedă separat.</span>
   </div>
 </footer>
