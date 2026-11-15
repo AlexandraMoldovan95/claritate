@@ -122,6 +122,7 @@ export function compare(x: Side, y: Side, currencyWanted?: string): CompareResul
   if (A.analysis.meta.hasStatus !== B.analysis.meta.hasStatus) notes.push("Doar unul dintre fișiere are coloană de status: am comparat valoarea tuturor comenzilor, nu doar a celor livrate.");
   if (onlyA.length) notes.push(`Doar în ${labels[0]}: ${onlyA.join(", ")} — nu se compară.`);
   if (onlyB.length) notes.push(`Doar în ${labels[1]}: ${onlyB.join(", ")} — nu se compară.`);
+  for (const m of matches.filter((m) => m.shared === 0)) notes.push(`„${m.a}” nu are nicio valoare comună între fișiere: fiecare valoare apare doar într-unul dintre ele.`);
   for (const m of matches.filter((m) => m.a !== m.b)) notes.push(`„${m.a}” (${labels[0]}) și „${m.b}” (${labels[1]}) sunt aceeași coloană (${m.by === "nume" ? "după nume" : `${m.shared} valori comune`}).`);
 
   const currencies = [...new Set([...A.records, ...B.records].map((r) => r.currency))];

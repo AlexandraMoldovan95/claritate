@@ -921,11 +921,13 @@
       const seg = el("div", { class: "seg", role: "group", "aria-label": "Compară după" }, c.dimensions.map((d, i) => el("button", {
         type: "button", "aria-pressed": String(d === dim), text: d.name, onclick: () => { cmp.dim = i; renderCompare(); },
       })));
+      const tagText = (t) => c.sameCalendar && t === "nou" ? `doar în ${lb}` : c.sameCalendar && t === "dispărut" ? `doar în ${la}` : t;
       const counts = {}; for (const r of dim.rows) counts[r.tag] = (counts[r.tag] || 0) + 1;
-      const summary = ["crescut", "scăzut", "nou", "dispărut"].filter((t) => counts[t]).map((t) => `${counts[t]} ${t === "nou" ? (counts[t] === 1 ? "nou" : "noi") : t === "dispărut" ? (counts[t] === 1 ? "dispărut" : "dispăruți") : t}`).join(" · ");
+      const summary = ["crescut", "scăzut", "nou", "dispărut"].filter((t) => counts[t]).map((t) => c.sameCalendar && (t === "nou" || t === "dispărut") ? `${counts[t]} ${tagText(t)}`
+        : `${counts[t]} ${t === "nou" ? (counts[t] === 1 ? "nou" : "noi") : t === "dispărut" ? (counts[t] === 1 ? "dispărut" : "dispăruți") : t}`).join(" · ");
       const rows = dim.rows.map((r) => [
         r.key, nf2.format(r.a), nf2.format(r.b), signedMoney(r.diff, ""), signedPct(r.pct),
-        el("span", { class: `pill ${TAG_CLASS[r.tag] || ""}`, text: r.tag }),
+        el("span", { class: `pill ${TAG_CLASS[r.tag] || ""}`, text: tagText(r.tag) }),
       ]);
       body.append(card(`După „${dim.name}”`, `${c.hasStatus ? "Venit livrat" : "Valoare"}, ${curLabel(cur)}. ${summary}`, [
         el("div", { class: "controls cmp-dims" }, [el("span", { class: "controls-label", text: "Compară după" }), seg]),
