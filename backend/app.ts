@@ -197,7 +197,17 @@ export function createApp(deps: Deps) {
     const body = await c.req.json().catch(() => ({})) as { question?: string };
     const question = String(body.question ?? "").trim().slice(0, 300);
     if (question.length < 3) return c.json({ error: "Scrie o întrebare." }, 400);
-    return c.json(answerCompare(question, a, b));
+    const res = answerCompare(question, a, b);
+    // „Descarcă (CSV)”: comenzile folosite dintr-un fișier (side=0 sau 1)
+    if (c.req.query("format") === "csv") {
+      const d = res.answer?.details[Number(c.req.query("side") ?? 0)]?.detail;
+      if (!d) return c.json({ error: res.error ?? "Nu am ce descărca." }, 400);
+      const esc = (v: string) => /[";\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+      const csv = "\uFEFF" + [d.columns, ...d.rows].map((r) => r.map(esc).join(";")).join("\r\n");
+      return c.body(csv, 200, { "content-type": "text/csv; charset=utf-8", "content-disposition": 'attachment; filename="comenzi-folosite.csv"' });
+    }
+    if (res.answer) res.answer.details = res.answer.details.map((x) => ({ ...x, detail: { ...x.detail, rows: x.detail.rows.slice(0, DETAIL_ROWS) } }));
+    return c.json(res);
   });
 
   app.post("/api/set-roles", async (c) => {

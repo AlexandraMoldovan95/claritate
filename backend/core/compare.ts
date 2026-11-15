@@ -11,7 +11,7 @@ import { monthName } from "./analyze.js";
 import type { CleanRecord } from "./clean.js";
 import { round2 } from "./clean.js";
 import { textKey } from "./normalize.js";
-import { execute, rulePlan, schemaFor, validatePlan, type AnswerSection, type Plan } from "./ask.js";
+import { execute, rulePlan, schemaFor, validatePlan, type AnswerDetail, type AnswerSection, type Plan } from "./ask.js";
 
 const DELIVERED = "Livrată";
 const LOST = new Set(["Retur", "Anulată"]);
@@ -215,10 +215,18 @@ export interface CompareAnswer {
   table: { group: string; a: string; b: string } | null;
   rows: { group: string; currency: string; a: number; b: number; diff: number; pct: number | null; tag?: string }[];
   metricIsCount: boolean;
+  /** Comenzile din spatele răspunsului, separat pe fiecare fișier, cu coloanele lui (valori exact ca în fișier). */
+  details: { label: string; detail: AnswerDetail }[];
 }
 
 const fmt = (n: number, d = 2) => new Intl.NumberFormat("ro-RO", { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
-const fmtPct = (n: number) => `${n >= 0 ? "+" : "−"}${new Intl.NumberFormat("ro-RO", { maximumFractionDigits: 1 }).format(Math.abs(n))}%`;
+const fmtPct = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${new Intl.NumberFormat("ro-RO", { maximumFractionDigits: 1 }).format(Math.abs(n))}%`;
+const signedCount = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${fmt(Math.abs(n), 0)}`;
+const headerOf = (s: Side) => [...s.analysis.columns].sort((a, b) => a.index - b.index).map((c) => c.name);
+function detailOf(recs: CleanRecord[], header: string[]): AnswerDetail {
+  const sorted = [...recs].sort((a, b) => a.line - b.line);
+  return { columns: ["Rând", ...header], rows: sorted.map((r) => [String(r.line), ...header.map((_, i) => r.raw?.[i] ?? "")]), total: sorted.length };
+}
 const signed = (n: number, cur: string, d: number) => `${n >= 0 ? "+" : "−"}${cur ? cur + " " : ""}${fmt(Math.abs(n), d)}`;
 
 export function answerCompare(question: string, x: Side, y: Side): { answer?: CompareAnswer; error?: string } {
@@ -243,9 +251,13 @@ export function answerCompare(question: string, x: Side, y: Side): { answer?: Co
     const inB = new Map(recB.map((r) => [textKey(r.cats[col] ?? ""), r.cats[col]]));
     const list = wantNew ? [...inB].filter(([k]) => k && !inA.has(k)).map(([, v]) => v) : [...inA].filter(([k]) => k && !inB.has(k)).map(([, v]) => v);
     const title = wantNew ? `${col}: apar în ${labels[1]}, nu și în ${labels[0]}` : `${col}: apar în ${labels[0]}, nu și în ${labels[1]}`;
+    const keys = new Set(list.map((v) => textKey(v ?? "")));
+    const details = wantNew
+      ? [{ label: labels[1], detail: detailOf(recB.filter((r) => keys.has(textKey(r.cats[col] ?? ""))), headerOf(B)) }]
+      : [{ label: labels[0], detail: detailOf(recA.filter((r) => keys.has(textKey(r.cats[col] ?? ""))), headerOf(A)) }];
     return { answer: {
       sections: [{ title: `${title} — ${list.length}`, items: list.length ? list.sort((a, b) => a.localeCompare(b, "ro")) : ["niciunul"] }],
-      notes: [], planText: `${wantNew ? "valori noi" : "valori dispărute"} în „${col}”`, table: null, rows: [], metricIsCount: true,
+      notes: [], planText: `${wantNew ? "valori noi" : "valori dispărute"} în „${col}”`, table: null, rows: [], metricIsCount: true, details,
     } };
   }
 
@@ -282,12 +294,13 @@ export function answerCompare(question: string, x: Side, y: Side): { answer?: Co
       return { column: "luna", op: "in", value: own.filter((m) => mm.includes(m.slice(5, 7))).concat(["\u0000"]) };
     }) };
   };
-  const ansA = execute(forSide(recA), recA), ansB = execute(forSide(recB), recB);
+  const ansA = execute(forSide(recA), recA, {}, headerOf(A)), ansB = execute(forSide(recB), recB, {}, headerOf(B));
+  const details = [{ label: labels[0], detail: ansA.detail }, { label: labels[1], detail: ansB.detail }];
   // procente („rata de retur”): fiecare fișier are propriul procent, le punem alăturat
   if (plan.metric === "share") {
     return { answer: {
       sections: [{ title: labels[0], items: ansA.sections.flatMap((x) => x.items) }, { title: labels[1], items: ansB.sections.flatMap((x) => x.items) }],
-      notes: [], planText: ansA.planText, table: null, rows: [], metricIsCount: false,
+      notes: [], planText: ansA.planText, table: null, rows: [], metricIsCount: false, details,
     } };
   }
   const count = plan.metric === "count" || plan.metric === "distinct";
@@ -310,7 +323,7 @@ export function answerCompare(question: string, x: Side, y: Side): { answer?: Co
       sections.push({ title: `${r.currency ? r.currency + ": " : ""}${labels[0]} → ${labels[1]}`, items: [
         `${labels[0]}: ${show(r.a, r.currency)}`,
         `${labels[1]}: ${show(r.b, r.currency)}`,
-        `Diferență: ${count ? `${r.diff >= 0 ? "+" : ""}${fmt(r.diff, 0)}` : signed(r.diff, r.currency, digits)}${r.pct !== null ? ` (${fmtPct(r.pct)})` : ""}`,
+        `Diferență: ${count ? signedCount(r.diff) : signed(r.diff, r.currency, digits)}${r.pct !== null ? ` (${fmtPct(r.pct)})` : ""}`,
       ] });
     }
     if (!rows.length) sections.push({ title: "Niciun rând nu corespunde filtrelor, în niciunul dintre fișiere", items: [] });
@@ -324,7 +337,7 @@ export function answerCompare(question: string, x: Side, y: Side): { answer?: Co
       const take = superl ? rs.slice(0, 1) : rs.slice(0, 5);
       sections.push({
         title: `${byChange ? (/scazut|scadere/.test(q) ? "Cele mai mari scăderi" : "Cele mai mari creșteri") : "Alăturat"}${c ? ` — ${c}` : ""}`,
-        items: [...take.map((r) => `${r.group}: ${show(r.a, c)} → ${show(r.b, c)} (${count ? `${r.diff >= 0 ? "+" : ""}${fmt(r.diff, 0)}` : signed(r.diff, c, digits)}${r.pct !== null ? `, ${fmtPct(r.pct)}` : r.a === 0 && r.b > 0 ? ", nou" : ""})`),
+        items: [...take.map((r) => `${r.group}: ${show(r.a, c)} → ${show(r.b, c)} (${count ? signedCount(r.diff) : signed(r.diff, c, digits)}${r.pct !== null ? `, ${fmtPct(r.pct)}` : r.a === 0 && r.b > 0 ? ", nou" : ""})`),
           ...(rs.length > take.length ? [`…și încă ${rs.length - take.length} în tabel`] : [])],
       });
     }
@@ -336,7 +349,7 @@ export function answerCompare(question: string, x: Side, y: Side): { answer?: Co
   return { answer: {
     sections, notes, planText: ansA.planText,
     table: plan.groupBy ? { group: ansA.table.group, a: labels[0], b: labels[1] } : null,
-    rows, metricIsCount: count,
+    rows, metricIsCount: count, details,
   } };
 }
 

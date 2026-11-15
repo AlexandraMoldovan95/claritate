@@ -959,6 +959,23 @@
             a.rows.map((r) => [r.group, ...(hasCur ? [r.currency] : []), f(r.a), f(r.b), a.metricIsCount ? signedNum(r.diff) : signedMoney(r.diff, ""), signedPct(r.pct)]),
             hasCur ? [2, 3, 4, 5] : [1, 2, 3, 4]));
         }
+        // comenzile folosite, separat pe fiecare fișier, cu coloanele lui
+        (a.details || []).forEach((x, side) => {
+          if (!x.detail || !x.detail.total) return;
+          const d = x.detail;
+          const foot = el("div", { class: "detail-foot" });
+          if (d.total > d.rows.length) foot.append(el("span", { text: `Afișez primele ${nf0.format(d.rows.length)} din ${nf0.format(d.total)}.` }));
+          foot.append(el("button", { class: "btn-link", type: "button", text: "Descarcă toate (CSV)", onclick: () => {
+            fetch(`/api/compare-ask?a=${cmp.a}&b=${cmp.b}&format=csv&side=${side}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question: q }) })
+              .then((r) => { if (!r.ok) throw new Error("Nu am putut pregăti fișierul."); return r.blob(); })
+              .then((blob) => { const href = URL.createObjectURL(blob); const link = el("a", { href, download: `comenzi-${x.label}.csv` }); document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(href), 2000); })
+              .catch((e) => foot.append(el("span", { class: "error-text", text: e.message })));
+          } }));
+          out.append(el("details", { class: "table-view answer-detail" }, [
+            el("summary", { text: `Vezi ${d.total === 1 ? "comanda folosită" : `cele ${nComenzi(d.total)} folosite`} din ${x.label}` }),
+            tableView(d.columns, d.rows, [0]), foot,
+          ]));
+        });
       } catch (e) { out.replaceChildren(emptyState(e.message)); }
     };
     const firstDim = c.dimensions[0]?.name || "client";
