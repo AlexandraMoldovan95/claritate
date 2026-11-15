@@ -36,6 +36,8 @@
   const nf2 = new Intl.NumberFormat("ro-RO", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const nf0 = new Intl.NumberFormat("ro-RO", { maximumFractionDigits: 0 });
   const pf = new Intl.NumberFormat("ro-RO", { style: "percent", maximumFractionDigits: 1 });
+  // „1 comandă”, „5 comenzi”, „20 de comenzi” (în română, „de” după numere care se termină în 00 sau 20–99)
+  const nComenzi = (n) => { const r = Math.abs(n) % 100; return `${nf0.format(n)} ${n === 1 ? "comandă" : (r === 0 && n !== 0) || r >= 20 ? "de comenzi" : "comenzi"}`; };
   const money = (v, cur) => `${cur ? cur + " " : ""}${nf2.format(v)}`;
   const compact = (v) => {
     const a = Math.abs(v);
@@ -504,8 +506,8 @@
     const row = curRow(x.byCurrency, cur);
     if (!x.available || !row) { panel.append(emptyState("Nu am găsit valori numerice pentru acest calcul. Verifică rolurile coloanelor.")); return; }
     const k = el("div", { class: "kpis" });
-    k.append(kpi(`Venit livrat (${curLabel(cur)})`, nf2.format(row.total), cur, `${nf0.format(row.count)} comenzi livrate`, { hero: true }));
-    for (const o of x.byCurrency.filter((o) => o.currency !== cur)) k.append(kpi(`Venit livrat (${curLabel(o.currency)})`, nf2.format(o.total), o.currency, `${nf0.format(o.count)} comenzi`));
+    k.append(kpi(`Venit livrat (${curLabel(cur)})`, nf2.format(row.total), cur, `${nComenzi(row.count)} livrate`, { hero: true }));
+    for (const o of x.byCurrency.filter((o) => o.currency !== cur)) k.append(kpi(`Venit livrat (${curLabel(o.currency)})`, nf2.format(o.total), o.currency, `${nComenzi(o.count)}`));
     panel.append(k);
     const grid = el("div", { class: "grid-2" });
     if (x.monthly) {
@@ -530,8 +532,8 @@
     if (!row) { panel.append(emptyState(`Nu există comenzi în ${curLabel(cur)}.`)); return; }
     const k = el("div", { class: "kpis" });
     k.append(kpi(`Venit pierdut (${curLabel(cur)})`, nf2.format(row.lost), cur, `${pf.format(row.share)} din valoarea tuturor comenzilor`, { hero: true }));
-    k.append(kpi("Din retururi", nf2.format(row.retur), cur, `${nf0.format(x.counts.retur)} comenzi returnate (toate monedele)`));
-    k.append(kpi("Din anulări", nf2.format(row.anulata), cur, `${nf0.format(x.counts.anulata)} comenzi anulate (toate monedele)`));
+    k.append(kpi("Din retururi", nf2.format(row.retur), cur, `${nComenzi(x.counts.retur)} returnate (toate monedele)`));
+    k.append(kpi("Din anulări", nf2.format(row.anulata), cur, `${nComenzi(x.counts.anulata)} anulate (toate monedele)`));
     k.append(kpi("Rata de pierdere", pf.format((x.counts.retur + x.counts.anulata) / (x.counts.total || 1)), null, "din numărul total de comenzi"));
     panel.append(k);
     const grid = el("div", { class: "grid-2" });
@@ -618,7 +620,7 @@
     k.append(kpi("Rata de livrare", pf.format(delivered ? delivered.share : 0), null, "din numărul de comenzi", { hero: true }));
     k.append(kpi("Rata de retur", pf.format(x.returnRate), null, [el("span", { class: "pill warn", text: "Retur" })]));
     k.append(kpi("Rata de anulare", pf.format(x.cancelRate), null, [el("span", { class: "pill bad", text: "Anulată" })]));
-    k.append(kpi(`Blocat „În curs” (${curLabel(cur)})`, nf2.format(x.pending[cur] || 0), cur, `${nf0.format(x.pendingCount)} comenzi în curs (toate monedele)`));
+    k.append(kpi(`Blocat „În curs” (${curLabel(cur)})`, nf2.format(x.pending[cur] || 0), cur, `${nComenzi(x.pendingCount)} în curs (toate monedele)`));
     panel.append(k);
     const statuses = orderStatuses(x.statuses);
     const grid = el("div", { class: "grid-2" });
@@ -695,7 +697,7 @@
         pick("Coloane", "cols", dims.filter((d) => d.id !== state.pivot.rows), true),
         pick("Valoare", "measure", res.measures.filter((m) => state.analysis.meta.hasValue || m.id === "count"), false),
       ]);
-      const meta = [`${nf0.format(p.orders)} ${p.orders === 1 ? "comandă" : "comenzi"}`];
+      const meta = [nComenzi(p.orders)];
       if (p.currency !== null) meta.push(`sume în ${curLabel(p.currency)}`);
       const foot = el("div", { class: "detail-foot" }, [
         el("span", { text: meta.join(" · ") }),
@@ -771,7 +773,7 @@
     const lost = d.lost.available ? curRow(d.lost.byCurrency, cur) : null;
     const sc = curRow(s.currencies, cur);
     const k = el("div", { class: "kpis" });
-    k.append(kpi(d.delivered.assumedAll ? `Venit (${curLabel(cur)})` : `Venit livrat (${curLabel(cur)})`, del ? nf2.format(del.total) : "—", del ? cur : null, del ? `${nf0.format(del.count)} comenzi livrate` : null, { hero: true }));
+    k.append(kpi(d.delivered.assumedAll ? `Venit (${curLabel(cur)})` : `Venit livrat (${curLabel(cur)})`, del ? nf2.format(del.total) : "—", del ? cur : null, del ? `${nComenzi(del.count)} livrate` : null, { hero: true }));
     k.append(kpi("Comenzi valide", nf0.format(s.orders), null, s.currencies.map((x) => `${nf0.format(x.count)} în ${curLabel(x.currency)}`).join(" · ")));
     if (sc) k.append(kpi("Valoare medie pe comandă", nf2.format(sc.avg), cur, `mediana: ${money(sc.median, cur)}`));
     if (lost) k.append(kpi(`Venit pierdut (${curLabel(cur)})`, nf2.format(lost.lost), cur, `retur ${money(lost.retur, cur)} · anulat ${money(lost.anulata, cur)}`));
@@ -800,7 +802,7 @@
     // 4. venit pierdut + curățare
     const lostKids = [];
     if (lost) {
-      lostKids.push(el("p", {}, `Retur + anulare: ${money(lost.lost, cur)} (${pf.format(lost.share)} din valoarea tuturor comenzilor în ${curLabel(cur)}) · ${nf0.format(d.lost.counts.retur)} comenzi returnate, ${nf0.format(d.lost.counts.anulata)} anulate.`));
+      lostKids.push(el("p", {}, `Retur + anulare: ${money(lost.lost, cur)} (${pf.format(lost.share)} din valoarea tuturor comenzilor în ${curLabel(cur)}) · ${nComenzi(d.lost.counts.retur)} returnate, ${nf0.format(d.lost.counts.anulata)} anulate.`));
       const tc = (d.lost.topCustomers && d.lost.topCustomers[cur]) || [];
       if (tc.length) lostKids.push(el("h3", { text: `Cele mai mari pierderi pe „${m.customerColumn || "client"}”` }), hbars(tc.slice(0, 5).map((t) => ({ name: t.name, value: t.value })), cur, { color: "var(--st-anulata)" }));
     } else lostKids.push(el("p", { text: "Fișierul nu are o coloană de status, deci venitul pierdut nu se poate separa." }));
@@ -868,8 +870,7 @@
       // comenzile din spatele răspunsului, cu coloanele fișierului urcat, valorile exact ca în fișier
       if (a.detail && a.detail.total > 0) {
         const d = a.detail;
-        const de = (n) => { const r = n % 100; return r === 0 || r >= 20 ? "de " : ""; }; // „31 de comenzi”, „5 comenzi”
-        const label = `Vezi ${d.total === 1 ? "comanda folosită" : `cele ${nf0.format(d.total)} ${de(d.total)}comenzi folosite`}`;
+        const label = `Vezi ${d.total === 1 ? "comanda folosită" : `cele ${nComenzi(d.total)} folosite`}`;
         const body = [tableView(d.columns, d.rows, [0])];
         const foot = el("div", { class: "detail-foot" });
         if (d.total > d.rows.length) foot.append(el("span", { text: `Afișez primele ${nf0.format(d.rows.length)} din ${nf0.format(d.total)}.` }));
