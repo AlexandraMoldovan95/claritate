@@ -655,9 +655,14 @@
       ]));
       if (a.rows.length > 1 || (a.rows.length === 1 && a.rows[0].group !== "Total")) {
         const isCount = res.plan && res.plan.metric === "count";
-        out.append(tableView(["Grup", "Monedă", isCount ? "Comenzi" : "Rezultat", "Rânduri"], a.rows.map((r) => [
-          r.group, r.currency || "—", isCount ? nf0.format(r.value) : nf2.format(r.value), nf0.format(r.count),
-        ]), [2, 3]));
+        // Pentru "count", coloana cu numărul de comenzi folosite ar fi identică cu
+        // rezultatul în sine, deci e omisă. Pentru restul, e numărul de comenzi care au
+        // intrat în calculul respectiv - de-aia nu se numește generic "Rânduri".
+        const headers = isCount ? ["Grup", "Monedă", "Comenzi"] : ["Grup", "Monedă", "Rezultat", "Comenzi folosite"];
+        const rowsData = a.rows.map((r) => isCount
+          ? [r.group, r.currency || "—", nf0.format(r.value)]
+          : [r.group, r.currency || "—", nf2.format(r.value), nf0.format(r.count)]);
+        out.append(tableView(headers, rowsData, isCount ? [2] : [2, 3]));
       }
     } catch (e) {
       out.replaceChildren(emptyState(e.message));

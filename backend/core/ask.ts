@@ -344,9 +344,15 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
     : `${r.currency ? r.currency + " " : ""}${fmtNum(r.value, plan.field === "cantitate" ? 0 : 2)}`;
   const label = (g: string) => plan.groupBy === "luna" && /^\d{4}-\d{2}$/.test(g) ? monthName(g) : g;
 
+  // pentru metrici altele decât „count”, spunem direct pe câte comenzi s-a calculat
+  // fiecare cifră (altfel numărul ăsta apare DOAR în coloana „Comenzi folosite” din
+  // tabel, pe care userii nu o citesc mereu ca aparținând de rândul de mai sus - vezi
+  // discuția despre întrebarea "cât a cheltuit X", care a dat 6/3 doar în tabel).
+  const withCount = (r: AnswerRow) => plan.metric === "count" ? show(r) : `${show(r)} (${r.count} ${r.count === 1 ? "comandă" : "comenzi"})`;
+
   let text: string;
   if (rows.length === 0) text = "Niciun rând nu corespunde filtrelor alese, deci rezultatul e 0.";
-  else if (!plan.groupBy) text = `${capitalize(METRIC_RO[plan.metric])}${fieldLabel && plan.metric !== "count" ? ` (${fieldLabel})` : ""}: ${out.map(show).join(" · ")}.`;
+  else if (!plan.groupBy) text = `${capitalize(METRIC_RO[plan.metric])}${fieldLabel && plan.metric !== "count" ? ` (${fieldLabel})` : ""}: ${out.map(withCount).join(" · ")}.`;
   else {
     // o propoziție scurtă pe fiecare monedă; lista completă e în tabel
     const byCur = new Map<string, AnswerRow[]>();
