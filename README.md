@@ -56,6 +56,14 @@ The full cleaning report is visible on the page ("**What I cleaned**" → "See t
 - **Pivot table** (7th tab): pick what goes on rows (client, product, agent, city, month, status…), on columns, and what is added up (delivered value, value across all statuses, number of orders, delivered quantity). Defaults to **Client × Month, delivered value**, with row, column and grand totals — the Excel pivot most people build on a sales export, with no formulas. Downloadable as CSV.
 - **Report** ("Raport PDF" button): key figures and the monthly chart, top clients and products, the pivot configured on screen, lost revenue and what was cleaned — for the whole file or a single month. Saved as PDF with the browser's print dialog (A4 print stylesheet; no PDF library, no server).
 
+## Comparing two files
+
+Upload a second file ("Compară cu alt fișier") — two periods (2025 vs 2026) or two branches — and get them side by side:
+
+- **Columns are matched like a SQL join**: first by name ("Nume client" = "Client"), then by shared values (if the same client names show up in both columns, it's the same column). Columns present in only one file are listed and left out.
+- **A full outer join on every shared column** (client, product, agent…): file 1, file 2, difference, %, and a tag — **new**, **gone**, **up**, **down**.
+- Key figures side by side, months aligned (same calendar month, or January with January across years), and **questions about the comparison**: "how much did Hermes grow", "which clients are new", "which agent dropped the most", "return rate".
+
 ## How questions are answered: code, not AI
 
 ```
@@ -132,8 +140,7 @@ main.ts · dev.ts · deno.json   the old Val Town/Deno entry points — kept for
 
 ## Next steps (deliberately out of scope for now)
 
-- **Comparing two files** with the same structure (this year vs last year, two shops).
-- **Lookups across files** (VLOOKUP-style), e.g. a cost list joined to the orders to get profit — with a report of unmatched keys and duplicate keys, the two ways a join silently gets totals wrong.
+- **Lookups across different kinds of files** (VLOOKUP-style), e.g. a cost list joined to the orders to get profit — with a report of unmatched keys and duplicate keys, the two ways a join silently gets totals wrong.
 - **Private data**: today anyone with a dashboard link can open it; real business use would need accounts, expiring links, or browser-only analysis.
 - **Optional AI planner** (see above).
 

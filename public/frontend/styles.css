@@ -434,3 +434,13 @@ body.report-open { overflow: hidden; }
   table.data tbody tr:nth-child(even) td { background: #fff; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ---------------------------------------------------------------- comparație între două fișiere */
+#compare { padding: 24px 0 64px; }
+#compare .card.fold, #compare .cmp-card, #compare .controls { margin-bottom: 16px; }
+.cmp-legend { grid-template-columns: repeat(auto-fill, minmax(110px, max-content)); gap: 6px 18px; margin-bottom: 4px; }
+.cmp-dims { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 4px 0 12px; }
+.cmp-dims .seg { flex-wrap: wrap; border-radius: 16px; }
+.cmp-scroll { max-height: 60vh; overflow: auto; }
+.cmp-scroll thead th { z-index: 1; }
+#compare .seg { max-width: 100%; }

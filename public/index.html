@@ -85,6 +85,24 @@
   </section>
 
   <!-- ================================================= DASHBOARD -->
+  <section id="compare" hidden aria-labelledby="cmpTitle">
+    <div class="container">
+      <div class="filebar">
+        <div>
+          <p class="report-kicker">Comparație între două fișiere</p>
+          <h1 id="cmpTitle" tabindex="-1"></h1>
+          <p id="cmpMeta"></p>
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary" id="cmpBack" type="button"><span>Înapoi la dashboard</span></button>
+          <button class="btn btn-secondary" id="cmpCopy" type="button"><span>Copiază linkul</span></button>
+        </div>
+      </div>
+      <div class="status-line" id="cmpStatus" role="status" aria-live="polite"></div>
+      <div id="cmpBody"></div>
+    </div>
+  </section>
+
   <section id="app" hidden aria-labelledby="fileTitle">
     <div class="container">
       <div class="filebar">
@@ -93,6 +111,11 @@
           <p id="fileMeta"></p>
         </div>
         <div class="actions">
+          <button class="btn btn-secondary" id="openCompare" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4"/></svg>
+            <span>Compară cu alt fișier</span>
+          </button>
+          <input type="file" id="compareInput" accept=".csv,.txt,.xlsx,.xlsm,.xls,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
           <button class="btn btn-secondary" id="openReport" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
             <span>Raport PDF</span>

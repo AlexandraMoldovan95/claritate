@@ -10,7 +10,8 @@ O aplicație web publică (merge și pe telefon) în care urci un fișier **CSV 
 1. structura detectată și datele curățate (cu raport despre ce s-a eliminat și de ce);
 2. **6 dashboard-uri** cu cifre cheie, tabele și grafice, plus un **tabel pivot** configurabil;
 3. un câmp în care pui o întrebare în română despre date și primești răspuns;
-4. un **raport gata de trimis** (tot fișierul sau o lună), salvat ca PDF din browser.
+4. un **raport gata de trimis** (tot fișierul sau o lună), salvat ca PDF din browser;
+5. **comparație între două fișiere** (două perioade sau două sedii), cu întrebări pe comparație.
 
 ## Cerințe de produs (nenegociabile)
 
@@ -51,6 +52,7 @@ backend/core/aggregate.ts   cele 6 dashboard-uri (doar aritmetică în cod)
 backend/core/analyze.ts     pipeline complet: text → analiză + rânduri curate
 backend/core/ask.ts         întrebare → plan JSON (reguli, fără model) → validare → calcul (cod)
 backend/core/pivot.ts       tabel pivot: rânduri × coloane × valoare, cu totaluri + export CSV
+backend/core/compare.ts     comparație 2 fișiere: potrivire coloane, FULL OUTER JOIN pe valori, întrebări pe ambele
 public/                     fișiere statice servite direct de Vercel: index.html, frontend/, examples/, og.jpg
 vercel.json                 rewrite /d/:id → /index.html, ca linkurile de dashboard partajate să funcționeze
 scripts/smoke-test.ts              backend/app.ts + db.ts rulează corect sub Node real cu hono din npm
@@ -66,7 +68,7 @@ main.ts · dev.ts · deno.json · examples/ · frontend/   varianta originală V
                                                           nu "npm:hono" specific Deno); public/ e copia activă
 ```
 
-Rute active: `GET /` (pagina), `POST /api/upload` (multipart sau JSON, CSV **sau** Excel, max 5 MB), `GET /api/view?id=` (rezultatul unui upload), `POST /api/set-roles?id=` (corectarea manuală a rolului unei coloane), `POST /api/ask?id=` (întrebare; `&format=csv` = comenzile folosite), `GET /api/pivot?id=&rows=&cols=&measure=&currency=&month=` (pivot; `&format=csv`), `GET /api/report?id=&month=` (datele raportului), `GET /d/:id` (link de partajat, rescris către `/index.html`), `GET /api/examples`, `GET /examples/:name`, `GET /api/roles`.
+Rute active: `GET /` (pagina), `POST /api/upload` (multipart sau JSON, CSV **sau** Excel, max 5 MB), `GET /api/view?id=` (rezultatul unui upload), `POST /api/set-roles?id=` (corectarea manuală a rolului unei coloane), `POST /api/ask?id=` (întrebare; `&format=csv` = comenzile folosite), `GET /api/pivot?id=&rows=&cols=&measure=&currency=&month=` (pivot; `&format=csv`), `GET /api/report?id=&month=` (datele raportului), `GET /api/compare?a=&b=&currency=` (comparație), `POST /api/compare-ask?a=&b=` (întrebare pe comparație), `GET /c/:a/:b` (link de partajat pentru comparație, rescris către `/index.html`), `GET /d/:id` (link de partajat, rescris către `/index.html`), `GET /api/examples`, `GET /examples/:name`, `GET /api/roles`.
 
 **De ce `?id=` și nu `/api/view/:id`:** pe Vercel, orice rută `/api/...` cu 2+ segmente de path dădea 404 direct de la platformă, înainte să ajungă la funcție — indiferent de runtime sau de configurarea din `vercel.json`. Cauza exactă nu a fost găsită după o investigație extinsă; rutele cu un singur segment sub `/api/...` au mers mereu fără probleme, deci id-ul dashboard-ului s-a mutat din path în query string. Detalii în `README-VERCEL.md`.
 
@@ -154,7 +156,17 @@ Reguli pentru dashboard-ul 4:
 
 - **Pivot** = al 7-lea tab. Rânduri: orice coloană categorică, Lună, Status (sau Monedă, dacă sunt mai multe). Coloane: la fel sau „fără”. Valoare: valoare livrată (implicit), valoare pe toate statusurile, număr de comenzi, cantitate livrată. **Implicit: Client × Lună, valoare livrată** (decizie Meko). Totaluri pe rânduri, coloane și total general; sumele de bani sunt pe moneda aleasă sus (fără conversie). Peste 24 de coloane → restul în „Altele”. Descărcare CSV (`;` + BOM). Prima coloană și rândul de total rămân fixe la derulare; pe telefon tabelul se derulează doar în interiorul lui.
 - **Raport** = butonul „Raport PDF” din antet. Perioada: **tot fișierul sau o lună aleasă**. Conține (decizie Meko): cifre cheie + grafic pe luni (graficul doar pe tot fișierul), top clienți și produse, **pivotul configurat în tab**, venit pierdut + ce s-a curățat. „Salvează ca PDF” = tipărirea browserului (`window.print()`), cu stil `@media print` pe A4 — fără bibliotecă și fără server de PDF. Curățarea din raport se referă mereu la tot fișierul.
-- **În afara scope-ului (pentru mai târziu):** comparația între două fișiere, VLOOKUP (ex. listă de costuri → profit), conturi/date private. Detalii în README → „Next steps”.
+- **În afara scope-ului (pentru mai târziu):** VLOOKUP / îmbogățire cu un fișier de alt tip (ex. listă de costuri → profit), conturi/date private. Detalii în README → „Next steps”.
+
+## Comparație între două fișiere (`compare.ts`)
+
+- Pentru **același tip de date**: două perioade (2025 vs 2026) sau două sedii. Butonul „Compară cu alt fișier” urcă al doilea fișier; linkul e `/c/<id1>/<id2>`. Fișierele se ordonează cronologic (primul = mai vechi). Etichete: anul, dacă fiecare fișier e într-un singur an; altfel numele fișierelor.
+- **Potrivirea coloanelor** (decizie Meko, „ca în SQL”): întâi după nume (fără cuvinte generice: „Nume client” = „Client”), apoi după **valorile comune** (≥ 2 valori comune și ≥ 20% suprapunere). Fiecare coloană e folosită o singură dată. Ce există doar într-un fișier e spus explicit și nu se compară.
+- **FULL OUTER JOIN pe valoare** pentru fiecare coloană comună (cheia = textul normalizat): venit livrat în fișierul 1 / 2, diferența, % și eticheta **nou / dispărut / crescut / scăzut** („nou”/„dispărut” după prezența în fișier, pe orice status).
+- **Cifre cheie alăturat**: venit livrat, comenzi livrate, valoare medie, toate comenzile, venit pierdut, rata de retur + anulare (diferența în puncte procentuale). Pe moneda aleasă, fără conversie.
+- **Lunile**: pe dată, dacă perioadele se suprapun (două sedii); altfel după numele lunii (ianuarie cu ianuarie).
+- **Întrebări** (`answerCompare`): „ce clienți noi am / au dispărut” (diferență de mulțimi); orice altă întrebare = același plan `rulePlan` pe ambele fișiere, apoi alăturat + diferența; „a crescut / a scăzut cel mai mult” = clasament după diferență; „martie” = martie din fiecare fișier când perioadele nu se suprapun; rata de retur = procentul fiecărui fișier. Sumele: implicit doar comenzi livrate.
+- Testat cu `A_magazin_online.xlsx` (2026) + un CSV 2025 cu antete diferite („Nume client”, „Agent”), fără „Oraș” și cu un client dispărut — toate cifrele verificate independent.
 
 ## Întrebări în română (`ask.ts`)
 

@@ -35,6 +35,7 @@
 
   const nf2 = new Intl.NumberFormat("ro-RO", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const nf0 = new Intl.NumberFormat("ro-RO", { maximumFractionDigits: 0 });
+  const nf1 = new Intl.NumberFormat("ro-RO", { maximumFractionDigits: 1 });
   const pf = new Intl.NumberFormat("ro-RO", { style: "percent", maximumFractionDigits: 1 });
   // „1 comandă”, „5 comenzi”, „20 de comenzi” (în română, „de” după numere care se termină în 00 sau 20–99)
   const nComenzi = (n) => { const r = Math.abs(n) % 100; return `${nf0.format(n)} ${n === 1 ? "comandă" : (r === 0 && n !== 0) || r >= 20 ? "de comenzi" : "comenzi"}`; };
@@ -149,6 +150,7 @@
     if (push) history.pushState({ id: data.id }, "", `/d/${data.id}`);
     setStatus("");
     $("#start").hidden = true;
+    $("#compare").hidden = true;
     $("#app").hidden = false;
     $("#newFileTop").hidden = false;
     renderAll();
@@ -159,7 +161,7 @@
   function resetToStart() {
     state.id = null; state.analysis = null;
     history.pushState(null, "", "/");
-    $("#app").hidden = true; $("#start").hidden = false; $("#newFileTop").hidden = true;
+    $("#app").hidden = true; $("#compare").hidden = true; $("#start").hidden = false; $("#newFileTop").hidden = true;
     $("#fileInput").value = "";
     $("#answer").replaceChildren();
     window.scrollTo({ top: 0 });
@@ -821,6 +823,194 @@
     body.append(el("p", { class: "report-foot", text: "Toate cifrele sunt calculate de cod, după reguli fixe (fără AI). Monedele nu sunt convertite între ele." }));
   }
 
+
+  // ------------------------------------------------------------------ comparație între două fișiere
+  // Un FULL OUTER JOIN pe valorile comune (client, produs, agent…): ce are fiecare în fișierul 1 și în fișierul 2.
+  const cmp = { a: null, b: null, data: null, dim: 0, currency: null };
+  const C_A = "#64748B", C_B = "var(--series-1)"; // perioada veche (gri închis) / cea nouă (indigo), contrast ≥ 3:1
+
+  async function startCompare(file) {
+    if (!file || !state.id) return;
+    const btn = $("#openCompare span");
+    btn.textContent = `Citesc „${file.name}”…`;
+    const form = new FormData(); form.append("file", file);
+    try {
+      const up = await api("/api/upload", { method: "POST", body: form });
+      await loadCompare(state.id, up.id, true);
+    } catch (e) { alertInline($("#panel"), e.message); }
+    finally { btn.textContent = "Compară cu alt fișier"; $("#compareInput").value = ""; }
+  }
+
+  async function loadCompare(a, b, push) {
+    cmp.a = a; cmp.b = b; cmp.dim = 0;
+    $("#start").hidden = true; $("#app").hidden = true; $("#compare").hidden = false; $("#newFileTop").hidden = false;
+    if (push) history.pushState({ a, b }, "", `/c/${a}/${b}`);
+    $("#cmpBody").replaceChildren(el("span", { class: "loading" }, [el("span", { class: "spinner", "aria-hidden": "true" }), "Compar fișierele…"]));
+    window.scrollTo({ top: 0 });
+    await refreshCompare();
+    $("#cmpTitle").focus?.();
+  }
+
+  async function refreshCompare() {
+    try {
+      const q = new URLSearchParams({ a: cmp.a, b: cmp.b });
+      if (cmp.currency !== null) q.set("currency", cmp.currency);
+      const res = await api(`/api/compare?${q}`);
+      cmp.data = res.compare; cmp.currency = res.compare.currency;
+      renderCompare();
+    } catch (e) {
+      $("#cmpBody").replaceChildren(emptyState(e.message));
+    }
+  }
+
+  const signedMoney = (v, cur) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${money(Math.abs(v), cur)}`;
+  const signedNum = (v) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${nf0.format(Math.abs(v))}`;
+  const signedPct = (v) => v === null || v === undefined ? "—" : `${v > 0 ? "+" : v < 0 ? "−" : ""}${nf1.format(Math.abs(v))}%`;
+  const TAG_CLASS = { nou: "info", "dispărut": "bad", crescut: "good", "scăzut": "warn", egal: "" };
+
+  function renderCompare() {
+    const c = cmp.data, [la, lb] = c.labels, cur = c.currency;
+    $("#cmpTitle").textContent = `${la} → ${lb}`;
+    $("#cmpMeta").textContent = `${c.files[0]}${c.periods[0] ? ` (${c.periods[0]})` : ""} · ${c.files[1]}${c.periods[1] ? ` (${c.periods[1]})` : ""}`;
+    const body = $("#cmpBody");
+    body.replaceChildren();
+
+    // ce s-a potrivit cu ce (ca un JOIN: pe ce coloane se compară)
+    const matchItems = c.matches.map((m) => el("li", {}, [iconBadge("rows"), el("span", {}, m.a === m.b
+      ? [el("strong", { text: m.a }), " — în ambele fișiere"]
+      : [el("strong", { text: m.a }), ` (${la}) = `, el("strong", { text: m.b }), ` (${lb}) · ${m.by === "nume" ? "după nume" : `${m.shared} valori comune`}`])]));
+    const other = c.notes.filter((n) => !/sunt aceeași coloană/.test(n)).map((n) => el("li", {}, [iconBadge("info"), el("span", { text: n })]));
+    body.append(el("details", { class: "card fold", open: true }, [
+      el("summary", {}, el("div", {}, [el("h2", { text: "Pe ce se compară" }), el("p", { class: "sub", style: "margin:0", text: c.matches.length ? `${c.matches.length} ${c.matches.length === 1 ? "coloană comună" : "coloane comune"}, folosite ca cheie (ca un JOIN în SQL)` : "Nicio coloană comună: se compară doar totalurile" })])),
+      el("ul", { class: "clean-list" }, [...matchItems, ...other]),
+    ]));
+
+    // moneda
+    if (c.currencies.length > 1) {
+      body.append(el("div", { class: "controls" }, [el("span", { class: "controls-label", text: "Monedă" }),
+        el("div", { class: "seg", role: "group", "aria-label": "Monedă" }, c.currencies.map((x) => el("button", {
+          type: "button", "aria-pressed": String(x === cur), text: curLabel(x),
+          onclick: () => { cmp.currency = x; refreshCompare(); },
+        })))]));
+    }
+
+    // cifre cheie alăturat
+    const kRows = c.kpis.map((k) => {
+      const isPct = /%/.test(k.label);
+      const f = (v) => v === null ? "—" : isPct ? `${nf1.format(v)}%` : k.money ? nf2.format(v) : nf0.format(v);
+      const d = k.diff === null ? "—" : isPct ? `${signedPct(k.diff).replace("%", "")} pp` : k.money ? signedMoney(k.diff, "") : signedNum(k.diff);
+      return [k.label, f(k.a), f(k.b), d, isPct ? "—" : signedPct(k.pct)];
+    });
+    body.append(card("Cifre cheie", c.hasStatus ? "Venitul și valorile medii sunt pe comenzile livrate." : null, tableView(["Indicator", la, lb, "Diferență", "%"], kRows, [1, 2, 3, 4]), "cmp-card"));
+
+    // luni
+    if (c.months.length) {
+      body.append(card(`${c.hasStatus ? "Venit livrat" : "Valoare"} pe lună (${curLabel(cur)})`, c.sameCalendar ? "Aceleași luni din calendar, în ambele fișiere." : `Ianuarie ${la} lângă ianuarie ${lb}, și tot așa.`, [
+        el("ul", { class: "legend cmp-legend" }, [
+          el("li", {}, [el("span", { class: "swatch", style: `background:${C_A}` }), la]),
+          el("li", {}, [el("span", { class: "swatch", style: `background:${C_B}` }), lb]),
+        ]),
+        pairColumns(c.months, cur, la, lb),
+        withTable(["Luna", la, lb, "Diferență"], c.months.map((m) => [m.label, nf2.format(m.a), nf2.format(m.b), signedMoney(m.b - m.a, "")]), [1, 2, 3]),
+      ], "cmp-card"));
+    }
+
+    // join pe fiecare coloană comună
+    if (c.dimensions.length) {
+      const dim = c.dimensions[Math.min(cmp.dim, c.dimensions.length - 1)];
+      const seg = el("div", { class: "seg", role: "group", "aria-label": "Compară după" }, c.dimensions.map((d, i) => el("button", {
+        type: "button", "aria-pressed": String(d === dim), text: d.name, onclick: () => { cmp.dim = i; renderCompare(); },
+      })));
+      const counts = {}; for (const r of dim.rows) counts[r.tag] = (counts[r.tag] || 0) + 1;
+      const summary = ["crescut", "scăzut", "nou", "dispărut"].filter((t) => counts[t]).map((t) => `${counts[t]} ${t === "nou" ? (counts[t] === 1 ? "nou" : "noi") : t === "dispărut" ? (counts[t] === 1 ? "dispărut" : "dispăruți") : t}`).join(" · ");
+      const rows = dim.rows.map((r) => [
+        r.key, nf2.format(r.a), nf2.format(r.b), signedMoney(r.diff, ""), signedPct(r.pct),
+        el("span", { class: `pill ${TAG_CLASS[r.tag] || ""}`, text: r.tag }),
+      ]);
+      body.append(card(`După „${dim.name}”`, `${c.hasStatus ? "Venit livrat" : "Valoare"}, ${curLabel(cur)}. ${summary}`, [
+        el("div", { class: "controls cmp-dims" }, [el("span", { class: "controls-label", text: "Compară după" }), seg]),
+        tableViewNodes([dim.name, la, lb, "Diferență", "%", ""], rows, [1, 2, 3, 4]),
+      ], "cmp-card"));
+    }
+
+    // întrebări pe comparație
+    const input = el("input", { id: "cmpQuestion", type: "text", maxlength: "300", autocomplete: "off", placeholder: "ex. Cât a crescut Hermes Logistics?" });
+    const out = el("div", { class: "answer", "aria-live": "polite" });
+    const askC = async (q) => {
+      out.replaceChildren(el("span", { class: "loading" }, [el("span", { class: "spinner", "aria-hidden": "true" }), "Calculez…"]));
+      try {
+        const res = await api(`/api/compare-ask?a=${cmp.a}&b=${cmp.b}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question: q }) });
+        out.replaceChildren();
+        if (!res.answer) { out.append(emptyState(res.error || "Nu pot răspunde la asta.")); return; }
+        const a = res.answer;
+        const box = el("div", { class: "answer-body" });
+        for (const sec of a.sections) {
+          box.append(el("p", { class: "answer-title", text: sec.title }));
+          if (sec.items.length) box.append(el("ul", { class: "answer-list" }, sec.items.map((t) => el("li", { text: t }))));
+        }
+        if (a.notes.length) box.append(el("ul", { class: "answer-notes" }, a.notes.map((t) => el("li", { text: t }))));
+        out.append(box, el("p", { class: "answer-plan" }, ["Am calculat: ", el("code", { text: a.planText }), " · pe ambele fișiere · plan ales de ", el("span", { class: "pill good", text: "reguli fixe, fără AI" })]));
+        if (a.table && a.rows.length) {
+          const f = (v) => a.metricIsCount ? nf0.format(v) : nf2.format(v);
+          const hasCur = a.rows.some((r) => r.currency);
+          out.append(tableView([a.table.group, ...(hasCur ? ["Monedă"] : []), a.table.a, a.table.b, "Diferență", "%"],
+            a.rows.map((r) => [r.group, ...(hasCur ? [r.currency] : []), f(r.a), f(r.b), a.metricIsCount ? signedNum(r.diff) : signedMoney(r.diff, ""), signedPct(r.pct)]),
+            hasCur ? [2, 3, 4, 5] : [1, 2, 3, 4]));
+        }
+      } catch (e) { out.replaceChildren(emptyState(e.message)); }
+    };
+    const firstDim = c.dimensions[0]?.name || "client";
+    const sug = [`Cât am vândut?`, `Ce ${/client/i.test(firstDim) ? "clienți" : "valori"} noi am?`, "Care e rata de retur?",
+      ...(c.dimensions.find((d) => /agent/i.test(d.name)) ? ["Care agent a crescut cel mai mult?"] : []),
+      ...(c.dimensions.find((d) => /produs/i.test(d.name)) ? ["Compară vânzările pe produse"] : [])];
+    body.append(el("section", { class: "card ask" }, [
+      el("h2", { text: "Întreabă ceva despre comparație" }),
+      el("p", { class: "sub", style: "margin:0", text: "Aceeași întrebare se calculează pe ambele fișiere, după reguli fixe (fără AI), apoi se pun alăturat, cu diferența." }),
+      el("form", { class: "ask-form", onsubmit: (e) => { e.preventDefault(); if (input.value.trim()) askC(input.value.trim()); } }, [
+        el("label", { class: "visually-hidden", for: "cmpQuestion", text: "Întrebare" }), input,
+        el("button", { class: "btn btn-primary", type: "submit", text: "Întreabă" }),
+      ]),
+      el("div", { class: "chips" }, sug.map((q) => el("button", { class: "chip", type: "button", text: q, onclick: () => { input.value = q; askC(q); } }))),
+      out,
+    ]));
+  }
+
+  /** Ca tableView, dar celulele pot fi și elemente (ex. eticheta „nou”). */
+  function tableViewNodes(cols, rows, numCols = []) {
+    return el("div", { class: "table-scroll cmp-scroll" }, el("table", { class: "data" }, [
+      el("thead", {}, el("tr", {}, cols.map((c, i) => el("th", { class: numCols.includes(i) ? "num" : "", scope: "col", text: c })))),
+      el("tbody", {}, rows.map((r) => el("tr", {}, r.map((v, i) => el("td", { class: numCols.includes(i) ? "num" : "" }, typeof v === "object" ? v : String(v ?? "—")))))),
+    ]));
+  }
+
+  /** Coloane perechi pe luni: perioada veche (gri) lângă cea nouă (indigo). */
+  function pairColumns(months, cur, la, lb) {
+    return responsive((W, H) => {
+      const L = 48, R = 8, T = 16, B = 34;
+      const { max, step } = niceScale(Math.max(...months.flatMap((m) => [m.a, m.b]), 0));
+      const band = (W - L - R) / months.length, bw = Math.min(18, band * 0.36);
+      const y = (v) => T + (H - T - B) * (1 - v / (max || 1));
+      const root = svg("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-label": `Comparație pe luni: ${la} față de ${lb}` });
+      for (let v = 0; v <= max + 1e-9; v += step) { root.append(svg("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: v === 0 ? "baseline" : "gridline" })); root.append(svgText(L - 8, y(v) + 4, compact(v), "axis-text", "end")); }
+      const every = band < 34 ? Math.ceil(34 / band) : 1;
+      months.forEach((m, i) => {
+        const cx = L + band * i + band / 2;
+        [[m.a, C_A, -1], [m.b, C_B, 1]].forEach(([v, color, side]) => {
+          const h = Math.max(0, y(0) - y(v)), x = side < 0 ? cx - bw - 1 : cx + 1;
+          if (h > 0.5) root.append(svg("rect", { x, y: y(0) - h, width: bw, height: h, rx: Math.min(3, bw / 2), fill: color }));
+        });
+        if (i % every === 0) root.append(svgText(cx, H - B + 18, m.label.slice(0, 3) + ".", "axis-text", "middle"));
+        const hit = svg("rect", { x: L + band * i, y: T, width: band, height: H - T - B, class: "hit", tabindex: 0, "aria-label": `${m.label}: ${la} ${money(m.a, cur)}, ${lb} ${money(m.b, cur)}` });
+        const tipText = `${la}: ${money(m.a, cur)} · ${lb}: ${money(m.b, cur)}`;
+        hit.addEventListener("pointermove", (e) => showTip(e, tipText, m.label));
+        hit.addEventListener("focus", () => { const r = hit.getBoundingClientRect(); showTip({ clientX: r.left + r.width / 2, clientY: r.top + 20, target: hit }, tipText, m.label); });
+        hit.addEventListener("pointerleave", hideTip); hit.addEventListener("blur", hideTip);
+        root.append(hit);
+      });
+      return root;
+    }, (w) => (w < 480 ? 240 : 300));
+  }
+
   // ------------------------------------------------------------------ întrebări
   function renderSuggestions() {
     $("#suggestions").replaceChildren(...state.analysis.suggestions.map((q) => el("button", {
@@ -913,6 +1103,14 @@
   $("#newFileTop").addEventListener("click", resetToStart);
   $("#askForm").addEventListener("submit", (e) => { e.preventDefault(); const q = $("#question").value.trim(); if (q) ask(q); });
   $("#openReport").addEventListener("click", () => openReport());
+  $("#openCompare").addEventListener("click", () => $("#compareInput").click());
+  $("#compareInput").addEventListener("change", (e) => startCompare(e.target.files[0]));
+  $("#cmpBack").addEventListener("click", () => { $("#compare").hidden = true; history.pushState({ id: cmp.a }, "", `/d/${cmp.a}`); loadById(cmp.a); });
+  $("#cmpCopy").addEventListener("click", async () => {
+    const label = $("#cmpCopy span"), url = `${location.origin}/c/${cmp.a}/${cmp.b}`;
+    try { await navigator.clipboard.writeText(url); label.textContent = "Link copiat"; } catch { label.textContent = url; }
+    setTimeout(() => { label.textContent = "Copiază linkul"; }, 2500);
+  });
   $("#reportClose").addEventListener("click", closeReport);
   $("#reportPrint").addEventListener("click", () => window.print());
   $("#reportMonth").addEventListener("change", (e) => openReport(e.target.value));
@@ -925,11 +1123,16 @@
     setTimeout(() => { label.textContent = "Copiază linkul"; }, 2500);
   });
   window.addEventListener("popstate", () => {
+    const c = location.pathname.match(/^\/c\/([a-z0-9]+)\/([a-z0-9]+)/);
+    if (c) return void loadCompare(c[1], c[2], false);
+    $("#compare").hidden = true;
     const m = location.pathname.match(/^\/d\/([a-z0-9]+)/);
     if (m) loadById(m[1]); else { $("#app").hidden = true; $("#start").hidden = false; $("#newFileTop").hidden = true; }
   });
 
   loadExamples();
+  const c0 = location.pathname.match(/^\/c\/([a-z0-9]+)\/([a-z0-9]+)/);
   const m = location.pathname.match(/^\/d\/([a-z0-9]+)/);
-  if (m) loadById(m[1]);
+  if (c0) loadCompare(c0[1], c0[2], false);
+  else if (m) loadById(m[1]);
 })();

@@ -9,6 +9,7 @@ import { answerQuestion, schemaFor, validatePlan } from "./core/ask.js";
 import { ROLE_LABELS, type Role } from "./core/detect.js";
 import { buildPivot, defaultPivotSpec, MEASURES, pivotCsv, pivotDimensions, type Measure } from "./core/pivot.js";
 import { buildDashboards } from "./core/aggregate.js";
+import { answerCompare, compare, type Side } from "./core/compare.js";
 import { OG_IMAGE } from "./og_image.js";
 
 export interface StoredUpload { id: string; filename: string; raw: string; overrides: Record<string, Role> }
@@ -175,6 +176,28 @@ export function createApp(deps: Deps) {
         })
       : analysis.dashboards;
     return c.json({ month, months, meta: analysis.meta, report: analysis.report, dashboards, orders: subset.length });
+  });
+
+  // Comparație între două fișiere (două perioade sau două sedii): /api/compare?a=ID&b=ID
+  const loadSide = async (id: string): Promise<Side | null> => {
+    const up = await load(id);
+    if (!up) return null;
+    const { analysis, records } = analyze(up.raw, up.filename, up.overrides);
+    return { id: up.id, filename: up.filename, analysis, records };
+  };
+  app.get("/api/compare", async (c) => {
+    const [a, b] = await Promise.all([loadSide(c.req.query("a") ?? ""), loadSide(c.req.query("b") ?? "")]);
+    if (!a || !b) return c.json({ error: "Nu am găsit unul dintre cele două fișiere." }, 404);
+    if (a.id === b.id) return c.json({ error: "Alege un fișier diferit pentru comparație." }, 400);
+    return c.json({ a: a.id, b: b.id, compare: compare(a, b, c.req.query("currency") ?? undefined) });
+  });
+  app.post("/api/compare-ask", async (c) => {
+    const [a, b] = await Promise.all([loadSide(c.req.query("a") ?? ""), loadSide(c.req.query("b") ?? "")]);
+    if (!a || !b) return c.json({ error: "Nu am găsit unul dintre cele două fișiere." }, 404);
+    const body = await c.req.json().catch(() => ({})) as { question?: string };
+    const question = String(body.question ?? "").trim().slice(0, 300);
+    if (question.length < 3) return c.json({ error: "Scrie o întrebare." }, 400);
+    return c.json(answerCompare(question, a, b));
   });
 
   app.post("/api/set-roles", async (c) => {
