@@ -20,6 +20,7 @@ export interface CleanRecord {
   cats: Record<string, string>;    // numele coloanei → forma afișată (canonică)
   nums: Record<string, number>;    // alte coloane numerice
   conflict: boolean;               // ID duplicat cu conținut diferit
+  raw: string[];                   // celulele rândului exact cum sunt în fișier (toate coloanele, în ordinea lor)
 }
 
 export interface RemovedRow { line: number; reason: "gol" | "total" | "duplicat"; preview: string }
@@ -66,12 +67,12 @@ export function cleanRows(
   };
 
   // 1–3: celule curățate, rânduri goale și rânduri de total scoase
-  const rows: { cells: string[]; line: number }[] = [];
+  const rows: { cells: string[]; line: number; orig: string[] }[] = [];
   for (const r of dataRows) {
     const cells = cols.map((c) => (isNullish(r.cells[c.index]) ? "" : tidy(r.cells[c.index])));
     if (cells.every((c) => c === "")) { report.empty++; continue; }
     if (isTotalRow(cells, cols)) { report.totals++; note(r.line, "total", cells); continue; }
-    rows.push({ cells, line: r.line });
+    rows.push({ cells, line: r.line, orig: cols.map((c) => r.cells[c.index] ?? "") });
   }
 
   // setări pe coloană: separator zecimal, ordinea în dată
@@ -96,7 +97,7 @@ export function cleanRows(
 
   const statusSeen = new Map<string, string>();
   const records: CleanRecord[] = [];
-  for (const { cells, line } of rows) {
+  for (const { cells, line, orig } of rows) {
     const q = num(qtyCol, cells), p = num(priceCol, cells), a = num(amountCol, cells);
     let value: number | null = null;
     if (q.v !== null && p.v !== null) value = round2(q.v * p.v);
@@ -130,7 +131,7 @@ export function cleanRows(
       line, id: idCol ? (cells[idCol.index] || null) : null,
       date, month: date ? date.slice(0, 7) : null,
       quantity: q.v, unitPrice: p.v, amount: a.v, value,
-      currency, status, cats, nums, conflict: false,
+      currency, status, cats, nums, conflict: false, raw: orig,
     });
   }
 

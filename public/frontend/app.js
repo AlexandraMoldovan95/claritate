@@ -664,21 +664,43 @@
         "Am calculat: ", el("code", { text: a.planText }), ` · ${nf0.format(a.matched)} rânduri folosite · plan ales de `,
         el("span", { class: `pill ${res.source === "model" ? "info" : "good"}`, text: res.source === "model" ? "model AI" : "reguli" }),
       ]));
-      // tabelul doar când adaugă ceva: grupe (clienți, luni…), nu când repetă totalul de mai sus
+      // tabelul rezumat doar când adaugă ceva: grupe (clienți, luni…), nu când repetă totalul de mai sus
       if (a.rows.some((r) => r.group !== "Total")) {
         const isCount = res.plan && (res.plan.metric === "count" || res.plan.metric === "distinct");
-        // Pentru "count", coloana cu numărul de comenzi folosite ar fi identică cu
-        // rezultatul în sine, deci e omisă. Pentru restul, e numărul de comenzi care au
-        // intrat în calculul respectiv - de-aia nu se numește generic "Rânduri".
-        const headers = isCount ? ["Grup", "Monedă", "Comenzi"] : ["Grup", "Monedă", "Rezultat", "Comenzi folosite"];
-        const rowsData = a.rows.map((r) => isCount
-          ? [r.group, r.currency || "—", nf0.format(r.value)]
-          : [r.group, r.currency || "—", nf2.format(r.value), nf0.format(r.count)]);
-        out.append(tableView(headers, rowsData, isCount ? [2] : [2, 3]));
+        const t = a.table || { group: "Grup", result: "Rezultat", count: "Comenzi" };
+        const hasCur = a.rows.some((r) => r.currency);
+        // pentru numărători, coloana „comenzi” ar fi identică cu rezultatul, deci e omisă
+        const headers = [t.group || "Grup", ...(hasCur ? ["Monedă"] : []), t.result, ...(isCount ? [] : [t.count])];
+        const rowsData = a.rows.map((r) => [r.group, ...(hasCur ? [r.currency || "—"] : []),
+          isCount ? nf0.format(r.value) : nf2.format(r.value), ...(isCount ? [] : [nf0.format(r.count)])]);
+        const numIdx = headers.map((_, i) => i).filter((i) => i >= (hasCur ? 2 : 1));
+        out.append(tableView(headers, rowsData, numIdx));
+      }
+      // comenzile din spatele răspunsului, cu coloanele fișierului urcat, valorile exact ca în fișier
+      if (a.detail && a.detail.total > 0) {
+        const d = a.detail;
+        const label = `Vezi ${d.total === 1 ? "comanda folosită" : `cele ${nf0.format(d.total)} comenzi folosite`}`;
+        const body = [tableView(d.columns, d.rows, [0])];
+        const foot = el("div", { class: "detail-foot" });
+        if (d.total > d.rows.length) foot.append(el("span", { text: `Afișez primele ${nf0.format(d.rows.length)} din ${nf0.format(d.total)}.` }));
+        foot.append(el("button", { class: "btn-link", type: "button", text: "Descarcă toate (CSV)", onclick: () => downloadDetail(question, foot) }));
+        body.push(foot);
+        out.append(el("details", { class: "table-view answer-detail" }, [el("summary", { text: label }), ...body]));
       }
     } catch (e) {
       out.replaceChildren(emptyState(e.message));
     }
+  }
+
+  async function downloadDetail(question, foot) {
+    try {
+      const r = await fetch(`/api/ask?id=${encodeURIComponent(state.id)}&format=csv`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question }) });
+      if (!r.ok) throw new Error("Nu am putut pregăti fișierul.");
+      const url = URL.createObjectURL(await r.blob());
+      const link = el("a", { href: url, download: "comenzi-folosite.csv" });
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (e) { foot.append(el("span", { class: "error-text", text: e.message })); }
   }
 
   // ------------------------------------------------------------------ evenimente

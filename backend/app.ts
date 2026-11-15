@@ -17,6 +17,9 @@ export interface Store {
   setOverrides(id: string, overrides: Record<string, Role>): Promise<void>;
 }
 
+/** Câte comenzi din spatele unui răspuns trimitem în pagină (restul: descărcare CSV). */
+export const DETAIL_ROWS = 100;
+
 export type Planner = (system: string, question: string) => Promise<unknown>;
 
 export interface Deps {
@@ -159,6 +162,17 @@ export function createApp(deps: Deps) {
         console.log(`[ask] plasa de siguranță a corectat planul. model: ${JSON.stringify(modelPlan)} → corectat: ${JSON.stringify(res.plan)}`);
       }
     }
+    // „Descarcă toate (CSV)”: toate comenzile din spatele răspunsului, cu coloanele fișierului.
+    // „;” + BOM, ca Excel-ul în română să le deschidă direct pe coloane, cu diacritice.
+    if (c.req.query("format") === "csv") {
+      if (!res.answer) return c.json({ error: res.error ?? "Nu pot răspunde la asta din acest fișier." }, 400);
+      const esc = (v: string) => /[";\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+      const d = res.answer.detail;
+      const csv = "\uFEFF" + [d.columns, ...d.rows].map((r) => r.map(esc).join(";")).join("\r\n");
+      return c.body(csv, 200, { "content-type": "text/csv; charset=utf-8", "content-disposition": 'attachment; filename="comenzi-folosite.csv"' });
+    }
+    // în pagină trimitem doar primele 100 de comenzi; restul se descarcă (vezi mai sus)
+    if (res.answer) res.answer.detail = { ...res.answer.detail, rows: res.answer.detail.rows.slice(0, DETAIL_ROWS) };
     return c.json(res);
   });
 

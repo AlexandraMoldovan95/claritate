@@ -428,9 +428,10 @@ export function rulePlan(question: string, schema: ReturnType<typeof schemaFor>)
   const nAfterSup = qm.match(/\b(?:cei|cele) _mai_ \w+ (\d+|doi|doua|trei|patru|cinci|sase|sapte|opt|noua|zece)\b/)?.[1]
     ?? q.match(/\b(\d+|doi|doua|trei|patru|cinci|sase|sapte|opt|noua|zece) (clienti|produse|agenti|orase|luni|articole|firme)\b/)?.[1];
   const nTop = topM?.[2] ? nWord(topM[2]) : nAfterSup ? nWord(nAfterSup) : null;
-  const n = nTop ?? (superlative && !topM ? 1 : 10);
+  const every = /\b(fiecare|fiecarui|fiecarei|toti|toate|tuturor)\b/.test(q);
+  const n = nTop ?? (superlative && !topM ? 1 : every ? 1000 : 10);
   if (nTop && superlative && !topM) plan.limit = nTop;
-  plan.limit = Math.min(Math.max(group === "luna" && !topM && !superlative ? 24 : n, 1), 24);
+  plan.limit = Math.min(Math.max(group === "luna" && !topM && !superlative ? 1000 : n, 1), 1000);
 
   // ---------- status implicit: la sume/medii pe valoare, doar comenzile livrate
   // (anulatele și retururile apar separat în răspuns, vezi execute)
@@ -510,7 +511,7 @@ export function validatePlan(raw: unknown, schema: ReturnType<typeof schemaFor>)
     if (!g || g.kind === "numeric") return { error: `Nu pot grupa după „${String(p.groupBy)}”.` };
     groupBy = g.name;
   }
-  const limit = Math.min(Math.max(Number(p.limit) || 10, 1), 24);
+  const limit = Math.min(Math.max(Number(p.limit) || 10, 1), 1000);
   const plan: Plan = { answerable: true, metric, field, filters, groupBy, sort: p.sort === "asc" ? "asc" : "desc", limit };
   if (p.defaultStatus) plan.defaultStatus = true;
   if (p.compare) plan.compare = true;
@@ -568,7 +569,14 @@ function compute(metric: Metric, xs: number[]): number {
 export interface AnswerRow { group: string; currency: string; value: number; count: number }
 /** Răspunsul pe secțiuni, ca să fie afișat schematic (titlu + puncte), nu ca paragraf. */
 export interface AnswerSection { title: string; items: string[] }
-export interface Answer { text: string; sections: AnswerSection[]; notes: string[]; rows: AnswerRow[]; planText: string; matched: number }
+/** Etichetele tabelului rezumat, ca să spună exact ce s-a calculat („Comenzi livrate”, nu „Comenzi folosite”). */
+export interface TableLabels { group: string; result: string; count: string }
+/** Comenzile din spatele răspunsului, cu coloanele fișierului, valorile exact ca în fișier. */
+export interface AnswerDetail { columns: string[]; rows: string[][]; total: number }
+export interface Answer {
+  text: string; sections: AnswerSection[]; notes: string[]; rows: AnswerRow[]; planText: string; matched: number;
+  table: TableLabels; detail: AnswerDetail;
+}
 
 /** Varianta text (pentru loguri, teste și clienți vechi): secțiunile lipite într-un paragraf. */
 function flatten(sections: AnswerSection[], notes: string[]): string {
@@ -597,7 +605,27 @@ function moneyByCurrency(rs: CleanRecord[], field: string, digits: number, curOr
     .map(([c, v]) => `${c ? c + " " : ""}${fmtNum(round2(v), digits)}`).join(" + ");
 }
 
-export function execute(plan: Plan, records: CleanRecord[], labels: Record<string, string> = {}): Answer {
+function buildDetail(used: CleanRecord[], header: string[]): AnswerDetail {
+  const sorted = [...used].sort((a, b) => a.line - b.line);
+  return { columns: ["Rând", ...header], rows: sorted.map((r) => [String(r.line), ...header.map((_, i) => r.raw?.[i] ?? "")]), total: sorted.length };
+}
+
+function tableLabels(plan: Plan, fieldLabel: string | null, labels: Record<string, string>): TableLabels {
+  const st = plan.filters.find((f) => f.column === "status");
+  const stTxt = !st ? "" : st.op === "eq" && st.value === DELIVERED ? "livrate" : Array.isArray(st.value) ? st.value.join(" + ") : String(st.value);
+  const count = !st ? "Comenzi" : stTxt === "livrate" ? "Comenzi livrate" : `Comenzi (${stTxt})`;
+  const g = plan.groupBy;
+  const group = !g ? "" : g === "luna" ? "Lună" : g === "status" ? "Status" : g === "moneda" ? "Monedă" : labels[g] ?? g;
+  const f = capitalize(fieldLabel ?? "valoare");
+  const suffix = stTxt === "livrate" ? " (doar livrate)" : stTxt ? ` (${stTxt})` : "";
+  const result = plan.metric === "count" ? count
+    : plan.metric === "sum" ? `${f}${suffix}`
+    : plan.metric === "distinct" ? "Comenzi"
+    : `${capitalize(METRIC_RO[plan.metric])} ${fieldLabel ?? ""}${suffix}`.trim();
+  return { group, result, count };
+}
+
+export function execute(plan: Plan, records: CleanRecord[], labels: Record<string, string> = {}, header: string[] = []): Answer {
   const fieldLabel = plan.field ? labels[plan.field] ?? plan.field : null;
   const statusFilter = plan.filters.find((f) => f.column === "status");
   const nonStatus = plan.filters.filter((f) => f.column !== "status");
@@ -630,7 +658,8 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
     }
     const sections = [{ title: "Procent", items }];
     // fără tabel: ar repeta exact cifrele de mai sus
-    return { text: flatten(sections, []), sections, notes: [], rows: [], planText, matched: part.length };
+    return { text: flatten(sections, []), sections, notes: [], rows: [], planText, matched: part.length,
+      table: tableLabels(plan, fieldLabel, labels), detail: buildDetail(part, header) };
   }
 
   // ---- valori distincte („câți clienți”)
@@ -642,7 +671,8 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
       ? { title: `${list.length} valori distincte în „${fieldLabel}”`, items: [] as string[] }
       : { title: "Niciun rând nu corespunde filtrelor alese", items: [] as string[] }];
     const notes = list.length ? ["Lista completă, cu numărul de comenzi pentru fiecare, e în tabel."] : [];
-    return { text: flatten(sections, notes), sections, notes, rows: list.map(([group, n]) => ({ group, currency: "", value: n, count: n })), planText, matched: rows.length };
+    return { text: flatten(sections, notes), sections, notes, rows: list.map(([group, n]) => ({ group, currency: "", value: n, count: n })), planText, matched: rows.length,
+      table: { group: fieldLabel ?? "", result: "Comenzi", count: "Comenzi" }, detail: buildDetail(rows, header) };
   }
 
   const money = plan.field === "valoare" || plan.field === "pret";
@@ -783,7 +813,16 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
   }
 
   if (plan.notes?.length) notes.push(`Am înțeles: ${plan.notes.join("; ")}`);
-  return { text: flatten(sections, notes), sections, notes, rows: out.map((r) => ({ ...r, group: label(r.group) })), planText, matched: rows.length };
+  // comenzile din spatele grupelor afișate (la „top 3 clienți”: doar ale celor 3; la „cea mai mare comandă”: doar ea)
+  let used: CleanRecord[];
+  if ((plan.metric === "max" || plan.metric === "min") && !plan.groupBy && plan.field) {
+    used = rows.filter((r) => out.some((o) => o.currency === r.currency && fieldValue(r, plan.field!) === o.value));
+  } else if (plan.groupBy) {
+    const keep = new Set(out.map((o) => `${o.group}\u0000${o.currency}`));
+    used = rows.filter((r) => keep.has(`${String(fieldValue(r, plan.groupBy!) ?? "(necompletat)")}\u0000${splitByCurrency ? r.currency : ""}`));
+  } else used = rows;
+  return { text: flatten(sections, notes), sections, notes, rows: out.map((r) => ({ ...r, group: label(r.group) })), planText, matched: rows.length,
+    table: tableLabels(plan, fieldLabel, labels), detail: buildDetail(used, header) };
 }
 
 export function describePlan(p: Plan, labels: Record<string, string> = {}): string {
@@ -797,7 +836,7 @@ export function describePlan(p: Plan, labels: Record<string, string> = {}): stri
     return `${lbl} ${opTxt[f.op]} ${v}${f.column === "status" && p.defaultStatus ? " (implicit)" : ""}`;
   }).join(", "));
   if (p.groupBy) parts.push(`grupat pe ${p.groupBy}`);
-  if (p.groupBy) parts.push(`${p.sort === "asc" ? "crescător" : "descrescător"}, primele ${p.limit}`);
+  if (p.groupBy) parts.push(`${p.sort === "asc" ? "crescător" : "descrescător"}, ${p.limit >= 1000 ? "toate" : `primele ${p.limit}`}`);
   return parts.join("; ");
 }
 
@@ -814,23 +853,24 @@ export async function answerQuestion(
   // în răspuns folosim numele real al coloanei („Nota”, „Suma”), nu „valoare”; o formulă (Cantitate × Pret) rămâne „valoare”
   const labels: Record<string, string> = {};
   for (const f of schema.fields) if (f.column && !f.column.includes("×")) labels[f.name] = f.column;
+  const header = [...analysis.columns].sort((a, b) => a.index - b.index).map((c) => c.name);
   if (planner) {
     try {
       const raw = await planner(plannerPrompt(schema), question);
       const v = validatePlan(raw, schema);
       if (v.plan) {
         const plan = guardPlan(v.plan, question, schema);
-        return { answer: execute(plan, records, labels), plan, source: "model" };
+        return { answer: execute(plan, records, labels, header), plan, source: "model" };
       }
       if (v.error && (raw as Plan)?.answerable === false) {
         // modelul zice „nu se poate”; dacă regulile înțeleg totuși întrebarea, răspundem cu ele
         const alt = validatePlan(rulePlan(question, schema), schema);
-        if (alt.plan) return { answer: execute(alt.plan, records, labels), plan: alt.plan, source: "reguli" };
+        if (alt.plan) return { answer: execute(alt.plan, records, labels, header), plan: alt.plan, source: "reguli" };
         return { source: "model", error: v.error };
       }
     } catch (_e) { /* cade pe reguli */ }
   }
   const fallback = validatePlan(rulePlan(question, schema), schema);
   if (!fallback.plan) return { source: "reguli", error: fallback.error };
-  return { answer: execute(fallback.plan, records, labels), plan: fallback.plan, source: "reguli" };
+  return { answer: execute(fallback.plan, records, labels, header), plan: fallback.plan, source: "reguli" };
 }

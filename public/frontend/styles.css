@@ -334,6 +334,11 @@ table.data tbody tr:nth-child(even) td { background: #FBFCFE; }
 .chip:hover { background: var(--primary-100); }
 .answer { margin-top: 16px; }
 .answer-text { font-size: 1.05rem; font-weight: 600; margin: 0; }
+.answer-detail .table-scroll { max-height: 60vh; overflow: auto; }
+.answer-detail table.data th, .answer-detail table.data td { white-space: nowrap; }
+.answer-detail table.data thead th { position: sticky; top: 0; background: var(--surface-2); z-index: 1; }
+.detail-foot { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-top: 8px; font-size: .85rem; color: var(--text-muted); }
+.btn-link { background: none; border: 0; padding: 0 2px; min-height: 44px; font: inherit; font-weight: 600; color: var(--primary-700); cursor: pointer; text-decoration: underline; }
 .answer-body { display: grid; gap: 6px; }
 .answer-title { font-size: 1rem; font-weight: 700; margin: 6px 0 0; color: var(--text); }
 .answer-body > .answer-title:first-child { margin-top: 0; }
