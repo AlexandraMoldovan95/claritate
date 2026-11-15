@@ -731,6 +731,8 @@
   async function openReport(month = "") {
     const dlg = $("#report");
     dlg.hidden = false;
+    $("#reportMonth").closest("label").hidden = false;
+    reportReturn = "#openReport";
     document.body.classList.add("report-open");
     const body = $("#reportBody");
     body.replaceChildren(el("span", { class: "loading" }, [el("span", { class: "spinner", "aria-hidden": "true" }), "Pregătesc raportul…"]));
@@ -750,10 +752,65 @@
     }
   }
 
+  let reportReturn = "#openReport";
   function closeReport() {
     $("#report").hidden = true;
     document.body.classList.remove("report-open");
-    $("#openReport").focus();
+    $(reportReturn)?.focus();
+  }
+
+  // Raportul comparației: aceeași fereastră și același stil de tipărire ca raportul unui fișier.
+  function openCompareReport() {
+    const c = cmp.data; if (!c) return;
+    const [la, lb] = c.labels, cur = c.currency;
+    $("#report").hidden = false;
+    document.body.classList.add("report-open");
+    $("#reportMonth").closest("label").hidden = true; // perioadele sunt chiar cele două fișiere
+    reportReturn = "#cmpReport";
+    const body = $("#reportBody");
+    const section = (title, ...kids) => el("section", { class: "report-section" }, [el("h2", { text: title }), ...kids]);
+    body.replaceChildren(el("header", { class: "report-head" }, [
+      el("p", { class: "report-kicker", text: "Raport de comparație" }),
+      el("h1", { text: `${la} → ${lb}` }),
+      el("p", { class: "report-meta", text: `${c.files[0]}${c.periods[0] ? ` (${c.periods[0]})` : ""} · ${c.files[1]}${c.periods[1] ? ` (${c.periods[1]})` : ""} · Sume în ${curLabel(cur)} · Generat pe ${dateRo(new Date().toISOString().slice(0, 10))} cu Claritate` }),
+    ]));
+
+    // pe ce se compară
+    const items = c.matches.map((m) => m.a === m.b ? `${m.a} — în ambele fișiere` : `${m.a} (${la}) = ${m.b} (${lb}), ${m.by === "nume" ? "după nume" : `${m.shared} valori comune`}`);
+    const other = c.notes.filter((n) => !/sunt aceeași coloană/.test(n));
+    body.append(section("Pe ce se compară", el("ul", { class: "answer-list" }, [...items, ...other].map((t) => el("li", { text: t })))));
+
+    // cifre cheie
+    const kRows = c.kpis.map((k) => {
+      const isPct = /%/.test(k.label);
+      const f = (v) => v === null ? "—" : isPct ? `${nf1.format(v)}%` : k.money ? nf2.format(v) : nf0.format(v);
+      const d = k.diff === null ? "—" : isPct ? `${signedPct(k.diff).replace("%", "")} pp` : k.money ? signedMoney(k.diff, "") : signedNum(k.diff);
+      return [k.label, f(k.a), f(k.b), d, isPct ? "—" : signedPct(k.pct)];
+    });
+    body.append(section("Cifre cheie", tableView(["Indicator", la, lb, "Diferență", "%"], kRows, [1, 2, 3, 4])));
+
+    // luni
+    if (c.months.length) {
+      body.append(section(`${c.hasStatus ? "Venit livrat" : "Valoare"} pe lună (${curLabel(cur)})`,
+        el("ul", { class: "legend cmp-legend" }, [
+          el("li", {}, [el("span", { class: "swatch", style: `background:${C_A}` }), la]),
+          el("li", {}, [el("span", { class: "swatch", style: `background:${C_B}` }), lb]),
+        ]),
+        pairColumns(c.months, cur, la, lb),
+        tableView(["Luna", la, lb, "Diferență"], c.months.map((m) => [m.label, nf2.format(m.a), nf2.format(m.b), signedMoney(m.b - m.a, "")]), [1, 2, 3])));
+    }
+
+    // câte un tabel pe fiecare coloană comună (primele 15 după valoare, ca să încapă pe pagină)
+    const tagText = (t) => c.sameCalendar && t === "nou" ? `doar în ${lb}` : c.sameCalendar && t === "dispărut" ? `doar în ${la}` : t;
+    for (const dim of c.dimensions) {
+      const rows = dim.rows.slice(0, 15).map((r) => [r.key, nf2.format(r.a), nf2.format(r.b), signedMoney(r.diff, ""), signedPct(r.pct), tagText(r.tag)]);
+      const counts = {}; for (const r of dim.rows) counts[tagText(r.tag)] = (counts[tagText(r.tag)] || 0) + 1;
+      body.append(section(`După „${dim.name}”`,
+        el("p", { class: "sub", text: `${c.hasStatus ? "Venit livrat" : "Valoare"}, ${curLabel(cur)} · ${Object.entries(counts).map(([t, n]) => `${n} ${t}`).join(" · ")}${dim.rows.length > 15 ? ` · primele 15 din ${dim.rows.length}` : ""}` }),
+        tableView([dim.name, la, lb, "Diferență", "%", ""], rows, [1, 2, 3, 4])));
+    }
+    body.append(el("p", { class: "report-foot", text: "Toate cifrele sunt calculate de cod, după reguli fixe (fără AI). Monedele nu sunt convertite între ele." }));
+    $("#reportClose").focus();
   }
 
   function renderReport(body, rep, pivot) {
@@ -1125,6 +1182,7 @@
   $("#openCompare").addEventListener("click", () => $("#compareInput").click());
   $("#compareInput").addEventListener("change", (e) => startCompare(e.target.files[0]));
   $("#cmpBack").addEventListener("click", () => { $("#compare").hidden = true; history.pushState({ id: cmp.a }, "", `/d/${cmp.a}`); loadById(cmp.a); });
+  $("#cmpReport").addEventListener("click", openCompareReport);
   $("#cmpCopy").addEventListener("click", async () => {
     const label = $("#cmpCopy span"), url = `${location.origin}/c/${cmp.a}/${cmp.b}`;
     try { await navigator.clipboard.writeText(url); label.textContent = "Link copiat"; } catch { label.textContent = url; }

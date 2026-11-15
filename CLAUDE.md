@@ -165,6 +165,7 @@ Reguli pentru dashboard-ul 4:
 - **FULL OUTER JOIN pe valoare** pentru fiecare coloană comună (cheia = textul normalizat): venit livrat în fișierul 1 / 2, diferența, % și eticheta **nou / dispărut / crescut / scăzut** („nou”/„dispărut” după prezența în fișier, pe orice status).
 - **Cifre cheie alăturat**: venit livrat, comenzi livrate, valoare medie, toate comenzile, venit pierdut, rata de retur + anulare (diferența în puncte procentuale). Pe moneda aleasă, fără conversie.
 - **Lunile**: pe dată, dacă perioadele se suprapun (două sedii); altfel după numele lunii (ianuarie cu ianuarie).
+- **Raport PDF al comparației** (butonul din antetul comparației): aceeași fereastră și același stil de tipărire ca raportul unui fișier; conține pe ce se compară, cifrele cheie, lunile (grafic + tabel) și câte un tabel pe fiecare coloană comună (primele 15 după valoare).
 - **Întrebări** (`answerCompare`), cu **comenzile folosite din fiecare fișier** sub răspuns (primele 100 + CSV, `?format=csv&side=0|1`): „ce clienți noi am / au dispărut” (diferență de mulțimi); orice altă întrebare = același plan `rulePlan` pe ambele fișiere, apoi alăturat + diferența; „a crescut / a scăzut cel mai mult” = clasament după diferență; „martie” = martie din fiecare fișier când perioadele nu se suprapun; rata de retur = procentul fiecărui fișier. Sumele: implicit doar comenzi livrate.
 - Testat cu `A_magazin_online.xlsx` (2026) + un CSV 2025 cu antete diferite („Nume client”, „Agent”), fără „Oraș” și cu un client dispărut — toate cifrele verificate independent.
 
