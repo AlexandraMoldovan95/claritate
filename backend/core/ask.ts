@@ -50,7 +50,8 @@ export function schemaFor(a: Analysis, records: CleanRecord[]): { fields: Schema
   const fields: SchemaField[] = [];
   const catNames = a.columns.filter((c) => c.role === "category").map((c) => c.name);
   for (const name of catNames) {
-    const vals = [...new Set(records.map((r) => r.cats[name]))];
+    // (la comparație, rândurile din al doilea fișier pot să nu aibă coloana — nu o numărăm ca valoare)
+    const vals = [...new Set(records.map((r) => r.cats[name]).filter((v): v is string => typeof v === "string" && v !== ""))];
     fields.push({ name, kind: "categorie", values: vals.length <= 300 ? vals.sort((x, y) => x.localeCompare(y, "ro")) : undefined });
   }
   if (a.meta.hasStatus) fields.push({ name: "status", kind: "status", values: [...new Set(records.map((r) => r.status).filter(Boolean) as string[])] });
