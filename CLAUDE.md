@@ -37,7 +37,7 @@ O aplicație web publică (merge și pe telefon) în care urci un fișier **CSV 
 - **Stocare**: Upstash Redis (prin integrarea Vercel Marketplace) — `vercelKvStore()` din `backend/db.ts`. TTL 90 de zile per upload.
 - **Model**: niciunul conectat — `backend/core/ask.ts` răspunde mereu prin `rulePlan` (planificatorul pe reguli).
 - **Excel**: `xlsx` (SheetJS, de pe CDN-ul lor, nu npm) — prima foaie cu date e convertită în text CSV înainte să intre în pipeline-ul existent (`backend/app.ts`, `spreadsheetToCsv()`), care rămâne neschimbat.
-- **Frontend**: HTML + CSS + JS vanilla, servite ca fișiere statice din `public/` (CDN Vercel, nu prin funcție). Grafice **SVG desenate în `app.js`** (fără Chart.js/CDN), redimensionate la lățimea cardului; paleta de status validată cu scriptul dataviz (`#059669` Livrată, `#4F46E5` În curs, `#D97706` Retur, `#E11D48` Anulată). Font **Plus Jakarta Sans**.
+- **Frontend**: HTML + CSS + JS vanilla, servite ca fișiere statice din `public/` (CDN Vercel, nu prin funcție). Grafice **SVG desenate în `app.js`** (fără Chart.js/CDN), redimensionate la lățimea cardului; paleta de status validată cu scriptul dataviz (`#059669` Livrată, `#4F46E5` În curs, `#D97706` Retur, `#E11D48` Anulată). Font **Plus Jakarta Sans**. **Temă deschisă / închisă** (dark mode): buton în antet; implicit după setarea dispozitivului, alegerea se ține minte în browser; culorile sunt variabile CSS (`[data-theme="dark"]` în `styles.css`), deci și graficele se schimbă singure; raportul se tipărește mereu pe alb.
 
 ```
 api/[...route].ts           funcția Node.js (Vercel) — punctul de intrare activ

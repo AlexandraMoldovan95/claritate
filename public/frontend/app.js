@@ -439,9 +439,9 @@
     const labelEvery = Math.max(1, Math.ceil(points.length / Math.max(2, Math.floor((W - L - R) / 48))));
     points.forEach((p, i) => { if (i % labelEvery === 0 || i === points.length - 1) root.append(svgText(x(i), H - B + 16, p.label, "axis-text", "middle")); });
     const last = points[points.length - 1];
-    root.append(svg("circle", { cx: x(points.length - 1), cy: y(last.value), r: 4.5, fill: "var(--series-1)", stroke: "#fff", "stroke-width": 2 }));
-    const cross = svg("line", { y1: T, y2: H - B, stroke: "#94A3B8", "stroke-width": 1, visibility: "hidden" });
-    const dot = svg("circle", { r: 4.5, fill: "var(--series-1)", stroke: "#fff", "stroke-width": 2, visibility: "hidden" });
+    root.append(svg("circle", { cx: x(points.length - 1), cy: y(last.value), r: 4.5, fill: "var(--series-1)", stroke: "var(--surface)", "stroke-width": 2 }));
+    const cross = svg("line", { y1: T, y2: H - B, stroke: "var(--axis)", "stroke-width": 1, visibility: "hidden" });
+    const dot = svg("circle", { r: 4.5, fill: "var(--series-1)", stroke: "var(--surface)", "stroke-width": 2, visibility: "hidden" });
     root.append(cross, dot);
     const hit = svg("rect", { x: L, y: T, width: W - L - R, height: H - T - B, class: "hit" });
     hit.addEventListener("pointermove", (e) => {
@@ -882,7 +882,7 @@
   // ------------------------------------------------------------------ comparație între două fișiere
   // Un FULL OUTER JOIN pe valorile comune (client, produs, agent…): ce are fiecare în fișierul 1 și în fișierul 2.
   const cmp = { a: null, b: null, data: null, dim: 0, currency: null };
-  const C_A = "#64748B", C_B = "var(--series-1)"; // perioada veche (gri închis) / cea nouă (indigo), contrast ≥ 3:1
+  const C_A = "var(--cmp-a)", C_B = "var(--series-1)"; // perioada veche (gri) / cea nouă (indigo), contrast ≥ 3:1 în ambele teme
 
   async function startCompare(file) {
     if (!file || !state.id) return;
@@ -1216,6 +1216,35 @@
   $("#newFile").addEventListener("click", resetToStart);
   $("#newFileTop").addEventListener("click", resetToStart);
   $("#askForm").addEventListener("submit", (e) => { e.preventDefault(); const q = $("#question").value.trim(); if (q) ask(q); });
+  // ------------------------------------------------------------------ temă (deschisă / închisă)
+  const root = document.documentElement;
+  const syncThemeButton = () => {
+    const dark = root.getAttribute("data-theme") === "dark";
+    const b = $("#themeToggle");
+    b.setAttribute("aria-pressed", String(dark));
+    b.setAttribute("aria-label", dark ? "Temă deschisă" : "Temă închisă");
+  };
+  // graficele folosesc variabile CSS, deci își schimbă singure culorile — nu e nevoie să le redesenăm
+  $("#themeToggle").addEventListener("click", () => {
+    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("claritate-theme", next); } catch { /* fără stocare: tema ține până la reîncărcare */ }
+    syncThemeButton();
+  });
+  // fără alegere salvată, tema urmează setarea dispozitivului și când aceasta se schimbă
+  try {
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+      let saved = null; try { saved = localStorage.getItem("claritate-theme"); } catch { /* */ }
+      if (saved) return;
+      root.setAttribute("data-theme", e.matches ? "dark" : "light"); syncThemeButton();
+    });
+  } catch { /* browsere vechi */ }
+  syncThemeButton();
+  // raportul se tipărește mereu pe fond alb, indiferent de temă
+  let themeBeforePrint = null;
+  window.addEventListener("beforeprint", () => { themeBeforePrint = root.getAttribute("data-theme"); root.setAttribute("data-theme", "light"); });
+  window.addEventListener("afterprint", () => { if (themeBeforePrint) root.setAttribute("data-theme", themeBeforePrint); });
+
   $("#openReport").addEventListener("click", () => openReport());
   $("#openCompare").addEventListener("click", () => $("#compareInput").click());
   $("#compareInput").addEventListener("change", (e) => startCompare(e.target.files[0]));
