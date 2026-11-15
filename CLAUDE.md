@@ -25,7 +25,7 @@ O aplicație web publică (merge și pe telefon) în care urci un fișier **CSV 
 | Hosting | **Vercel** (migrat de pe Val Town) | Val Town s-a închis. Cod fără build step (`backend/core/*` nu s-a schimbat deloc), funcție serverless Node.js + fișiere statice pe CDN. Detalii și probleme întâlnite în `README-VERCEL.md`. |
 | Format fișiere | **CSV și Excel** (`.xlsx`/`.xlsm`/`.xls`) | Un angajator care testează aplicația cu propriile date are șanse mari să aibă un Excel, nu un CSV. Detectat după extensie **și** după semnătura reală a fișierului (octeții ZIP/OLE), ca să prindem și fișiere redenumite greșit. |
 | Pachetul de citit Excel | **SheetJS de pe CDN-ul lor oficial** (`xlsx@0.20.3`), nu versiunea de pe npm (`0.18.5`) | Versiunea de pe npm are 2 vulnerabilități cunoscute, de severitate mare (poluare de prototip, ReDoS), nereparate acolo — relevante exact aici, unde oricine poate urca un fișier. |
-| Întrebări în română | **Planificator pe reguli** (`rulePlan`), fără model AI | Pe Val Town folosea `std/openai` gratuit, fără cheie. Pe Vercel nu există echivalent gratuit; nu s-a adăugat o cheie plătită, deci întrebările merg mereu prin reguli — funcționează, înțelege mai puține formulări decât modelul. |
+| Întrebări în română | **Cod, nu AI:** planificator pe reguli (`rulePlan`), fără model și fără cheie API — spus explicit în pagină, README și sub fiecare răspuns. Modul AI e doar pregătit, pentru viitor | Pe Val Town folosea `std/openai` gratuit, fără cheie. Pe Vercel nu există echivalent gratuit; nu s-a adăugat o cheie plătită, deci întrebările merg mereu prin reguli — funcționează, înțelege mai puține formulări decât modelul. |
 | Denumiri | **Venit livrat / Venit pierdut** | CSV-urile nu au costuri, deci nu există „profit” sau „pierdere” contabilă. „Pierdut” = Retur + Anulată. |
 | Chei API | **Niciuna în cod sau în repo** | Stocarea (Upstash Redis) se autentifică prin variabile de mediu puse automat de integrarea Vercel. |
 
@@ -150,6 +150,7 @@ Reguli pentru dashboard-ul 4:
 
 ## Întrebări în română (`ask.ts`)
 
+0. **Starea actuală: răspunsurile sunt 100% cod, fără AI și fără cheie API** — spus explicit în pagină, în README (GitHub) și sub fiecare răspuns („reguli fixe, fără AI”). Pașii 1–4 descriu modul AI **pregătit pentru viitor**, neactivat; detalii și costuri în `README-VERCEL.md` → „Mod AI — luat în calcul pentru viitor”.
 1. Dacă ar exista un model conectat, ar primi **doar** întrebarea + schema: coloanele cu rolul lor, valorile distincte ale coloanelor categorice (max 50), intervalul de date, monedele — **niciodată rândurile sau cifrele**. **Pe Vercel nu e conectat niciun model**, deci acest pas nu rulează în practică; întrebările merg direct la planificatorul pe reguli (pasul 5).
 2. Planul e un JSON strict, de forma:
    `{ "metric": "sum|count|avg|min|max|share", "field": "valoare|cantitate|<coloana>", "filters": [{ "column": "...", "op": "eq|in|between|contains", "value": ... }], "groupBy": "<coloana>|luna|null", "sort": "desc|asc", "limit": 10, "answerable": true }`

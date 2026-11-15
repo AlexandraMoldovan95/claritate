@@ -4,7 +4,7 @@
 
 **Status: live** at [claritate.vercel.app](https://claritate.vercel.app). Originally built on Val Town; migrated in full to Vercel when Val Town shut down (`README-VERCEL.md` has the migration history, including the real bugs hit along the way and how they were fixed).
 
-You upload a sales CSV **or an Excel file** (`.xlsx`/`.xlsm`/`.xls`) and the app **reads** it, **detects its columns**, **cleans** it, and shows you **6 dashboards** with figures, charts, and tables. You can also ask **questions in natural language** about the data. When an AI model is wired in, it only chooses **what** gets calculated — **the code calculates every figure**. The live deployment has no AI model attached (Val Town's free one doesn't exist outside Val Town, and no paid key has been added), so questions go through the same **rule-based planner** the app already falls back to when the model is unavailable — fewer phrasings understood, same guarantee that no number comes from the model.
+You upload a sales CSV **or an Excel file** (`.xlsx`/`.xlsm`/`.xls`) and the app **reads** it, **detects its columns**, **cleans** it, and shows you **6 dashboards** with figures, charts, and tables. You can also ask **questions in Romanian** about the data. **Answers are produced by code, not by AI:** a rule-based planner interprets the question, and the code calculates every figure and writes the answer. No AI model and no API key are used. An optional AI mode is prepared in the code for the future (see below), but it is not active.
 
 > **Portfolio demo project** — scoped, built, and tested like a live product delivered to a real client. The "Testing and quality" and "How it was built" sections below show the process behind it, for anyone who wants to see how it came together.
 
@@ -51,21 +51,24 @@ A real example, `vanzari_2026.csv`: **145 rows** under the header → **129 vali
 
 The full cleaning report is visible on the page ("**What I cleaned**" → "See the removed rows").
 
-## The "the model never calculates numbers" rule
+## How questions are answered: code, not AI
 
 ```
-question in natural language
-   → the model receives ONLY the question + the column names (no rows, no figures)
-   → returns a JSON plan: which metric, which column, which filters, which grouping
+question in Romanian
+   → rulePlan (code) turns it into a plan: which metric, which column, which filters, which grouping
    → the code VALIDATES the plan (columns exist, operations allowed)
-   → the safety net corrects the plan if it contradicts the question
-   → the code CALCULATES and writes the answer sentence itself
+   → the code CALCULATES and writes the answer itself (title + bullet points)
 ```
 
-- Under every answer it shows **exactly what was calculated** ("Calculated: sum of value; where status = Return…") and **who chose the plan**: the model or the rules.
-- **Safety net:** in early live testing, the model answered "how much did I lose to **returns**" by including Returns + Cancellations. For "worst month," it returned every month, ignoring status entirely. Since then, the code checks the plan before calculating: if the question explicitly says "returns," "cancellations," or "best/worst month," the plan is corrected before the calculation runs, and the correction is logged.
-- **Any CSV:** the model also sees the **real name** of the numeric column (e.g. "Grade," "Amount"), so questions work on files that aren't sales data at all. If the model says "not possible" but the rule-based planner understands the question, the rules answer instead.
-- **No API key needed (on Val Town):** the model used there was Val Town's free one (`std/openai`), with no key to manage. If it didn't respond (the limit was 10 requests/minute), the question automatically fell back to a **rule-based planner**, which also works without the model. **On Vercel**, that free model doesn't exist outside Val Town, so for now the app runs on the rule-based planner only, by design — see `README-VERCEL.md` for how a real key (OpenAI/Anthropic) would be added later without touching this logic.
+- **No AI model, no API key.** Every answer on the live site comes from code. The page says so, and under every answer it shows the exact plan and "plan chosen by: fixed rules, no AI".
+- **What the rules understand:** partial names matched against the file ("Ionescu" → Ionescu Mihai, "Cluj" → Cluj-Napoca), column synonyms (agent, city, client, product), months and periods (quarter, semester, "last 3 months", "between February and April", "March vs February" with the difference), numeric filters ("over 1000 lei"), distinct counts ("how many clients"), rates ("return rate"), the largest/smallest order.
+- **Refuse rather than guess:** if the question mentions a name, city, month or column that isn't in the file, the answer says what wasn't found instead of returning the company total.
+- **Cancelled and returned orders:** sums and rankings use delivered orders by default (like the "delivered revenue" dashboards), and the cancelled / returned / in-progress amounts are listed separately in the same answer.
+- **The orders behind every answer:** "See the N orders used" opens them with the **uploaded file's own columns** and values exactly as in the file; all of them can be downloaded as CSV.
+
+### AI mode — considered for the future
+
+The code is ready for an optional AI planner that would choose **only the plan** (what to calculate), never the figures: `plannerPrompt`, `validatePlan` and the `guardPlan` safety net already exist in `backend/core/ask.ts`, and the original Val Town version ran this way with a free model. It would help with free-form phrasings the rules don't cover. It isn't enabled because it needs a paid API key (well under one cent per question with a small model), a rate limit, and a notice that the model would see column names and category values (client/product names) — never the numbers. If added, the rules stay as the fallback. How to wire it in: `README-VERCEL.md`.
 
 ## Testing and quality
 
@@ -125,8 +128,8 @@ main.ts · dev.ts · deno.json   the old Val Town/Deno entry points — kept for
 ## Known limits
 
 - Files up to **5 MB** / **50,000** rows, CSV or Excel.
-- Excel files: only the **first sheet with data** is read (a blank cover sheet is skipped automatically); other sheets are ignored.
+- Excel files: only the **sheet with the most data** is read (a cover or summary sheet placed first is skipped automatically); other sheets are ignored.
 - Currencies are **not converted**: each keeps its own figures.
 - Anyone with a dashboard's link can view it (there's no login), so the page explicitly says **not to upload confidential data**.
-- No AI model is wired in — every question goes through the **rule-based planner**, which understands fewer phrasings than a model would. (On Val Town, the free model had a rate limit; past it, the rules took over the same way.)
+- Answers come from a **rule-based planner** (code, no AI): it understands the phrasings it was written for (~80 question types tested) and refuses clearly when it doesn't understand, but free-form questions outside those patterns get a refusal rather than an answer.
 - Upstash Redis entries expire after **90 days** — an uploaded/shared dashboard older than that will 404. The 4 built-in examples are unaffected (they're static files, not stored in Redis).

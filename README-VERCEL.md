@@ -43,9 +43,17 @@ Adăugat după migrare, când a venit întrebarea „dacă un angajator testeaz�
 
 În același timp, am verificat explicit cerința „merge cu orice CSV/Excel, indiferent de coloane" cu teste automate (`scripts/validate-shapes.ts`) — și am găsit un bug real de poziție în detectarea rândurilor de total (vezi `CLAUDE.md`, secțiunea de curățare), reparat.
 
-## De ce fără model AI
+## Răspunsurile sunt date de cod, nu de AI
+
+**Starea actuală:** nu se folosește niciun model AI și nicio cheie API. Fiecare întrebare e interpretată de reguli fixe scrise în cod (`rulePlan`), iar cifrele le calculează codul. Pagina spune asta explicit, iar sub fiecare răspuns scrie „plan ales de: reguli fixe, fără AI”.
+
+### De ce fără model AI
 
 Val Town dădea acces gratuit la `gpt-5.4-nano`, fără cheie. Vercel nu are echivalent — ar trebui o cheie proprie (OpenAI/Anthropic), cu cost per request. Nu s-a adăugat o cheie; aplicația merge pe planificatorul pe reguli (`rulePlan` din `backend/core/ask.ts`), care funcționează pentru întrebările obișnuite, doar înțelege mai puține formulări. Răspunsul arată explicit `"plan ales de: reguli"`.
+
+### Mod AI — luat în calcul pentru viitor
+
+Codul e pregătit pentru un model care ar alege **doar planul** (ce se calculează), nu cifrele: `plannerPrompt`, `validatePlan` și `guardPlan` din `backend/core/ask.ts` există deja. Ce ar aduce: înțelegerea formulărilor libere pe care regulile nu le acoperă. Ce ar costa / cere: o cheie plătită (sub un cent pe întrebare cu un model mic), o limită de cereri și o mențiune în pagină că modelul vede numele coloanelor și valorile categorice (clienți, produse), nu cifrele. Regulile ar rămâne ca rezervă.
 
 **Dacă se adaugă o cheie mai târziu:** se scrie un `planner` în `api/[...route].ts` (vezi tipul `Planner` din `backend/app.ts`), se citește cheia dintr-o variabilă de mediu Vercel — zero alte schimbări în `backend/`.
 

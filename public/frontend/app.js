@@ -662,7 +662,7 @@
       }
       out.append(el("p", { class: "answer-plan" }, [
         "Am calculat: ", el("code", { text: a.planText }), ` · ${nf0.format(a.matched)} rânduri folosite · plan ales de `,
-        el("span", { class: `pill ${res.source === "model" ? "info" : "good"}`, text: res.source === "model" ? "model AI" : "reguli" }),
+        el("span", { class: `pill ${res.source === "model" ? "info" : "good"}`, text: res.source === "model" ? "model AI" : "reguli fixe, fără AI" }),
       ]));
       // tabelul rezumat doar când adaugă ceva: grupe (clienți, luni…), nu când repetă totalul de mai sus
       if (a.rows.some((r) => r.group !== "Total")) {

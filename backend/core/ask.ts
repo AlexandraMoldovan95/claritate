@@ -1,4 +1,12 @@
 // Întrebări în română.
+//
+// ACUM (live pe Vercel): răspunsurile sunt 100% cod. `rulePlan` interpretează întrebarea după
+// reguli fixe, `execute` calculează și scrie răspunsul. Nu se folosește niciun model AI și nicio cheie API.
+//
+// PENTRU VIITOR (pregătit, neactivat): `answerQuestion` acceptă opțional un `planner` (un model AI).
+// Dacă se conectează vreodată unul, el ar alege doar planul, iar codul ar calcula în continuare cifrele.
+// Fără `planner`, totul merge pe reguli, ca acum.
+//
 // Modelul (sau, ca rezervă, regulile de mai jos) alege DOAR planul: ce metrică,
 // ce coloană, ce filtre, ce grupare. Codul validează planul, calculează și scrie
 // singur propoziția. Modelul nu vede rândurile și nu scrie nicio cifră.
