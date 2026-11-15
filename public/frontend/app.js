@@ -776,9 +776,7 @@
     ]));
 
     // pe ce se compară
-    const items = c.matches.map((m) => m.a === m.b ? `${m.a} — în ambele fișiere` : `${m.a} (${la}) = ${m.b} (${lb}), ${m.by === "nume" ? "după nume" : `${m.shared} valori comune`}`);
-    const other = c.notes.filter((n) => !/sunt aceeași coloană/.test(n));
-    body.append(section("Pe ce se compară", el("ul", { class: "answer-list" }, [...items, ...other].map((t) => el("li", { text: t })))));
+    body.append(section("Pe ce se compară", ...compareSchemaView(c)));
 
     // cifre cheie
     const kRows = c.kpis.map((k) => {
@@ -932,14 +930,10 @@
     const body = $("#cmpBody");
     body.replaceChildren();
 
-    // ce s-a potrivit cu ce (ca un JOIN: pe ce coloane se compară)
-    const matchItems = c.matches.map((m) => el("li", {}, [iconBadge("rows"), el("span", {}, m.a === m.b
-      ? [el("strong", { text: m.a }), " — în ambele fișiere"]
-      : [el("strong", { text: m.a }), ` (${la}) = `, el("strong", { text: m.b }), ` (${lb}) · ${m.by === "nume" ? "după nume" : `${m.shared} valori comune`}`])]));
-    const other = c.notes.filter((n) => !/sunt aceeași coloană/.test(n)).map((n) => el("li", {}, [iconBadge("info"), el("span", { text: n })]));
+    // pe ce se compară: rezumat + tabel coloană cu coloană
     body.append(el("details", { class: "card fold", open: true }, [
-      el("summary", {}, el("div", {}, [el("h2", { text: "Pe ce se compară" }), el("p", { class: "sub", style: "margin:0", text: c.matches.length ? `${c.matches.length} ${c.matches.length === 1 ? "coloană comună" : "coloane comune"}, folosite ca cheie (ca un JOIN în SQL)` : "Nicio coloană comună: se compară doar totalurile" })])),
-      el("ul", { class: "clean-list" }, [...matchItems, ...other]),
+      el("summary", {}, el("div", {}, [el("h2", { text: "Pe ce se compară" }), el("p", { class: "sub", style: "margin:0", text: "Ce coloane au ambele fișiere și ce se poate pune alăturat" })])),
+      el("div", { class: "fold-body" }, compareSchemaView(c)),
     ]));
 
     // moneda
@@ -1049,6 +1043,50 @@
       el("div", { class: "chips" }, sug.map((q) => el("button", { class: "chip", type: "button", text: q, onclick: () => { input.value = q; askC(q); } }))),
       out,
     ]));
+  }
+
+
+  /**
+   * „Pe ce se compară”, explicat simplu: o propoziție de rezumat, apoi un tabel coloană cu coloană
+   * (există în fișierul 1? în fișierul 2? se compară?), apoi ce mai e de știut.
+   */
+  function compareSchemaView(c) {
+    const [la, lb] = c.labels;
+    const yes = (t) => el("span", { class: "pill good", text: t });
+    const no = (t) => el("span", { class: "pill", text: t });
+    const warn = (t) => el("span", { class: "pill warn", text: t });
+    const has = (v) => v ? "✓" : "—";
+    const rows = [];
+    // dată, sumă, status: baza oricărei comparații
+    const base = [
+      ["Data", "hasDate", "lunile se pun una lângă alta"],
+      ["Suma / valoarea", "hasValue", "totaluri, medii, venit"],
+      ["Status (livrat, anulat…)", "hasStatus", "livrate, anulări, retururi"],
+    ];
+    for (const [label, key, what] of base) {
+      const a = c.sides?.[0]?.[key], b = c.sides?.[1]?.[key];
+      rows.push([label, has(a), has(b), a && b ? yes(`Da — ${what}`) : no(`Nu — lipsește din ${!a && !b ? "ambele" : !a ? la : lb}`)]);
+    }
+    // coloanele de tip „cine / ce” (client, produs, agent…)
+    for (const m of c.matches) {
+      const label = m.a === m.b ? m.a : `${m.a} = ${m.b}`;
+      const how = m.a === m.b ? "" : m.by === "nume" ? " (nume asemănătoare)" : ` (${m.shared} valori comune)`;
+      rows.push([label + how, m.a, m.b, m.shared === 0 ? warn("Da, dar nicio valoare comună") : yes(`Da — pe fiecare ${m.a.toLowerCase()}`)]);
+    }
+    for (const x of c.onlyA) rows.push([x, x, "—", no(`Nu — există doar în ${la}`)]);
+    for (const x of c.onlyB) rows.push([x, "—", x, no(`Nu — există doar în ${lb}`)]);
+
+    const usable = c.matches.filter((m) => m.shared > 0).map((m) => m.a);
+    const summary = usable.length
+      ? `Se compară totalurile, lunile și, pe rând, fiecare valoare din: ${usable.join(", ")}. Exemplu: pentru fiecare ${usable[0].toLowerCase()} vezi cât are în ${la} și cât în ${lb}.`
+      : `Fișierele nu au coloane comune de tip client, produs sau agent, așa că se compară doar totalurile: vânzări, comenzi, anulări și retururi, pe lună.`;
+    // ce mai e de știut, în cuvinte simple (fără ce e deja în tabel)
+    const extra = c.notes.filter((n) => !/^Doar în |sunt aceeași coloană|nu are nicio valoare comună/.test(n));
+    return [
+      el("p", { class: "cmp-summary", text: summary }),
+      tableViewNodes(["Coloană", la, lb, "Se compară?"], rows, []),
+      extra.length ? el("ul", { class: "answer-notes" }, extra.map((t) => el("li", { text: t }))) : null,
+    ];
   }
 
   /** Ca tableView, dar celulele pot fi și elemente (ex. eticheta „nou”). */

@@ -34,6 +34,8 @@ export interface CompareResult {
   months: { key: string; label: string; a: number; b: number }[];
   dimensions: { name: string; rows: JoinRow[] }[];
   hasStatus: boolean;
+  /** Ce are fiecare fișier (dată, sumă, status), ca să explicăm pe ce se poate compara. */
+  sides: { hasDate: boolean; hasValue: boolean; hasStatus: boolean }[];
 }
 
 export interface JoinRow { key: string; a: number; b: number; aOrders: number; bOrders: number; diff: number; pct: number | null; tag: "nou" | "dispărut" | "crescut" | "scăzut" | "egal" }
@@ -176,6 +178,7 @@ export function compare(x: Side, y: Side, currencyWanted?: string): CompareResul
   return {
     labels, files: [A.filename, B.filename], periods: [per(pa), per(pb)], sameCalendar,
     matches, onlyA, onlyB, notes, currencies, currency, kpis, months, dimensions, hasStatus,
+    sides: [A, B].map((s) => ({ hasDate: s.analysis.meta.hasDate, hasValue: s.analysis.meta.hasValue, hasStatus: s.analysis.meta.hasStatus })),
   };
 }
 
