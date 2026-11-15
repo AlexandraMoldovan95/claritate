@@ -97,7 +97,7 @@ Rute active: `GET /` (pagina), `POST /api/upload` (multipart sau JSON, CSV **sau
 |---|---|---|
 | `id` | nr comanda, id, cod, nr factura, order id | valori mai mult unice |
 | `date` | data, date, zi, data comenzii | ≥ 80% se parsează ca dată |
-| `quantity` | cantitate, qty, buc, quantity | numere întregi mici |
+| `quantity` | cantitate, cant., qty, buc, quantity | numere întregi mici |
 | `unit_price` | pret unitar, pret, unit price, price | numere |
 | `amount` | valoare, total, suma, amount, venit | numere (folosit dacă nu există cantitate × preț) |
 | `currency` | valuta, moneda, currency | coduri de 3 litere |
@@ -109,9 +109,9 @@ Dacă numele nu spune nimic, rolul se deduce din conținut. Utilizatorul vede ro
 ## Format Excel (`.xlsx`/`.xlsm`/`.xls`)
 
 - Detectat în `backend/app.ts` prin extensie **și** prin semnătura fișierului (ZIP pentru `.xlsx`/`.xlsm`, OLE/CFB pentru `.xls`) — merge și dacă fișierul e redenumit greșit sau trimis fără extensie corectă.
-- Se alege automat **prima foaie cu cel puțin 2 rânduri de date** (sare peste o foaie de tip „instrucțiuni”/copertă, dacă prima foaie e goală sau are un singur rând).
-- Foaia aleasă e convertită în text CSV (`XLSX.utils.sheet_to_csv`) **înainte** să intre în `analyze()` — restul pipeline-ului (detectare, curățare, agregare) nu știe și nu trebuie să știe că fișierul original era Excel.
-- Celulele native Excel de tip Dată/Număr ies din conversie ca text ISO/simplu (`2026-02-03`, `125.5`), nu ca text murdar — deci curățarea le vede chiar mai curate decât un CSV scris de mână.
+- Se alege automat **foaia cu cele mai multe celule completate** (nu prima foaie: un sumar/pivot pus primul era analizat în locul datelor — bug real, reparat).
+- Foaia aleasă e convertită în text CSV **înainte** să intre în `analyze()` — restul pipeline-ului (detectare, curățare, agregare) nu știe și nu trebuie să știe că fișierul original era Excel.
+- **Se folosește valoarea celulei, nu textul afișat.** Varianta veche (`sheet_to_csv`) exporta textul formatat în stil american — `2,400` pentru 2400 și `3/14/26` pentru date — iar curățarea (gândită pentru format românesc) le citea greșit: **sume de 1000× mai mici** și **zi↔lună inversate** când toate zilele erau ≤ 12. Acum numerele ies cu virgulă zecimală, fără separator de mii (`1234,5`), iar datele ies ISO (`2026-03-14`), citite din codul de dată Excel (fără fus orar).
 
 ## Curățare (`clean.ts`) — deterministă, în ordinea asta
 
@@ -154,9 +154,17 @@ Reguli pentru dashboard-ul 4:
 2. Planul e un JSON strict, de forma:
    `{ "metric": "sum|count|avg|min|max|share", "field": "valoare|cantitate|<coloana>", "filters": [{ "column": "...", "op": "eq|in|between|contains", "value": ... }], "groupBy": "<coloana>|luna|null", "sort": "desc|asc", "limit": 10, "answerable": true }`
 3. Codul **validează** planul (coloane existente, operații permise; altfel „Nu pot răspunde din aceste date”), îl execută și **construiește singur propoziția** din șablon (ex. „Venitul livrat de la Solaris Energy în martie 2026: RON 12.345,67”), plus tabelul folosit. Utilizatorul vede și planul — transparent.
-4. **Plasă de siguranță** (`guardPlan`): dacă planul (de la model, când era conectat pe Val Town) contrazice ce scrie explicit în întrebare, codul îl corectează înainte de calcul — statusul cerut („retururi” = doar Retur, „anulări” = doar Anulată, „pierdut” = ambele) și „cel mai / cea mai …” = o singură grupă, „cea mai bună/slabă lună” = după venit livrat. Cod păstrat și activ (se aplică și planurilor din `rulePlan`), chiar fără model conectat acum.
-5. **Pe Vercel, mereu `rulePlan`** (planificatorul pe reguli, fără model): înțelege mai puține formulări decât modelul de pe Val Town, dar garantează același lucru — codul calculează, nu modelul. Sub răspuns scrie „plan ales de: reguli”.
-6. **Orice CSV/Excel:** schema conține și numele real al coloanei numerice (ex. `"column": "Nota"` lângă `valoare`); planul pe reguli înțelege și denumiri reale de coloană, nu doar „valoare”/„cantitate”. Testat live pe un CSV de note școlare.
+4. **Plasă de siguranță** (`guardPlan`): dacă planul de la model contrazice ce scrie explicit în întrebare, codul îl corectează înainte de calcul — statusul cerut („retururi” = doar Retur, „anulări” = doar Anulată, „pierdut” = ambele) și „cel mai / cea mai …” = o singură grupă, „cea mai bună/slabă lună” = după venit livrat. Se aplică **doar planurilor de la model**; `rulePlan` face deja aceste lucruri singur.
+5. **Pe Vercel, mereu `rulePlan`** (planificatorul pe reguli, fără model). Sub răspuns scrie „plan ales de: reguli”. Ce înțelege (testat cu ~80 de întrebări pe Excel-uri realiste + CSV-urile demo, comparate cu cifre calculate independent):
+   - **Nume parțiale**, potrivite pe cuvinte cu valorile din orice coloană categorică: „agentul Ionescu” → Ionescu Mihai, „Cluj” → Cluj-Napoca, „de la Hermes” → Hermes Logistics. Dacă un cuvânt se potrivește cu mai multe valori → **întreabă** care („Ionescu Mihai (Agent) sau Ionescu Construct (Client)?”). Ce urmează după numele coloanei („agentul X”) se caută doar în acea coloană.
+   - **Coloane după nume și sinonime** (agent/vânzător, oraș/localitate/județ, client/firmă, produs/articol): „cel mai bun agent”, „vânzări pe orașe”, „cât a vândut fiecare agent”.
+   - **Perioade**: luni (și mai multe, în ordinea din întrebare), „între februarie și aprilie”, trimestru/Q1, semestru, „ultimele N luni”, „ultima lună”, an; **„martie față de februarie”** → ambele luni + diferența (sumă și %).
+   - **Filtre numerice**: „peste/sub/cel puțin/cel mult N lei/euro/bucăți”.
+   - **Metrici**: sumă, număr, medie, mediană, **cea mai mare/mică comandă** (cu ID, client, dată, status), **valori distincte** („câți clienți am?”), **procente** („rata de retur”, „ce procent din vânzări vine de la X”), „cele mai multe comenzi/anulări” = numărare.
+   - **Regula de bază: refuz în loc de total.** Dacă întrebarea pomenește un nume, oraș, lună sau coloană care nu există în fișier, răspunsul e „Nu găsesc «X» în fișier (am căutat în: …)”, nu totalul firmei. Varianta veche ignora pe tăcute ce nu înțelegea și răspundea convingător la altă întrebare.
+   - Interpretările făcute de reguli apar în răspuns („Am înțeles: «Cluj» = Cluj-Napoca (Oraș)”).
+6. **Anulate și retururi — decizie de produs:** la sume, medii și clasamente pe valoare, când întrebarea nu cere un status, se calculează **doar comenzile livrate** (la fel ca dashboard-urile „Venit livrat”), iar **anulatele, retururile și cele în curs se arată separat în aceeași propoziție** („Separat, nelivrate: În curs RON … (n comenzi) · Retur … · Anulată …”), ca utilizatorul să vadă tot. La numărători („câte comenzi”) se numără toate, cu defalcarea pe status. Dacă întrebarea cere explicit retururi/anulări/în curs, se răspunde doar la asta. Luna incompletă (ultima lună, dacă datele se opresc înainte de sfârșitul ei) e semnalată direct în răspuns.
+7. **Orice CSV/Excel:** schema conține și numele real al coloanei numerice (ex. `"column": "Nota"` lângă `valoare`); planul pe reguli înțelege și denumiri reale de coloană, nu doar „valoare”/„cantitate”. Testat live pe un CSV de note școlare.
 
 ## Securitate și robustețe
 

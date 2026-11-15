@@ -654,7 +654,7 @@
         el("span", { class: `pill ${res.source === "model" ? "info" : "good"}`, text: res.source === "model" ? "model AI" : "reguli" }),
       ]));
       if (a.rows.length > 1 || (a.rows.length === 1 && a.rows[0].group !== "Total")) {
-        const isCount = res.plan && res.plan.metric === "count";
+        const isCount = res.plan && (res.plan.metric === "count" || res.plan.metric === "distinct");
         // Pentru "count", coloana cu numărul de comenzi folosite ar fi identică cu
         // rezultatul în sine, deci e omisă. Pentru restul, e numărul de comenzi care au
         // intrat în calculul respectiv - de-aia nu se numește generic "Rânduri".

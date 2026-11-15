@@ -93,7 +93,7 @@ export function headerNames(raw: string[], width: number): string[] {
 const NAME_RULES: [RegExp, Role][] = [
   [/\b(valuta|moneda|currency|curr|ccy|devize?)\b/, "currency"],
   [/\b(status|stare|state|stadiu|situatie)\b/, "status"],
-  [/\b(cantitate|cantitati|qty|quantity|buc|bucati|units?|nr buc)\b/, "quantity"],
+  [/\b(cantitate|cantitati|cant|qty|quantity|buc|bucati|units?|nr buc)\b/, "quantity"],
   [/\b(pret|price|tarif|cost unitar)\b/, "unit_price"],
   [/\b(valoare|total|suma|sum|amount|venit|venituri|revenue|sales|vanzari|incasat|incasari|net|brut)\b/, "amount"],
   [/\b(data|date|datum|zi|day)\b/, "date"],

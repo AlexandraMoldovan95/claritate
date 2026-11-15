@@ -3,7 +3,7 @@
 // Val Town (SQLite + std/openai), dev.ts de variante locale pentru teste.
 
 import { Hono } from "hono";
-import { read as readWorkbook, utils as xlsxUtils } from "xlsx";
+import { read as readWorkbook, SSF, utils as xlsxUtils } from "xlsx";
 import { analyze, AnalysisError, MAX_BYTES } from "./core/analyze.js";
 import { answerQuestion, schemaFor, validatePlan } from "./core/ask.js";
 import { ROLE_LABELS, type Role } from "./core/detect.js";
@@ -188,22 +188,59 @@ function looksLikeSpreadsheet(filename: string, bytes: Uint8Array): boolean {
   return hasSig(bytes, ZIP_SIG) || hasSig(bytes, OLE_SIG);
 }
 
-/** Citește prima foaie nevidă dintr-un Excel (.xlsx/.xlsm/.xls) și o convertește în text CSV,
- * ca analyze() să rămână neschimbat — vede mereu doar CSV, indiferent de formatul fișierului primit. */
+/** Citește foaia cu date dintr-un Excel (.xlsx/.xlsm/.xls) și o convertește în text CSV,
+ * ca analyze() să rămână neschimbat — vede mereu doar CSV, indiferent de formatul fișierului primit.
+ *
+ * Important: folosim VALOAREA celulei, nu textul afișat. `sheet_to_csv` exporta textul formatat
+ * în stil american („2,400”, „3/14/26”), pe care curățarea (gândită pentru format românesc) îl
+ * citea greșit: „2,400” → 2,4 și zi↔lună inversate. Acum:
+ *  - numerele ies cu virgulă zecimală, fără separator de mii („1234,5”) — neambiguu pentru normalize;
+ *  - datele ies ISO („2026-03-14”), citite din codul de dată Excel, fără fus orar.
+ * Foaia aleasă = cea cu cele mai multe celule completate (nu prima cu ≥2 rânduri, care putea fi un sumar). */
 function spreadsheetToCsv(bytes: Uint8Array): string {
   let wb;
   try {
-    wb = readWorkbook(Buffer.from(bytes), { type: "buffer", cellDates: true });
+    wb = readWorkbook(Buffer.from(bytes), { type: "buffer", cellDates: false, cellNF: true });
   } catch {
     throw new AnalysisError("Nu am putut citi acest fișier Excel. Verifică dacă nu e corupt sau protejat cu parolă.");
   }
   if (!wb.SheetNames.length) throw new AnalysisError("Fișierul Excel nu are nicio foaie de calcul.");
-  const sheetName =
-    wb.SheetNames.find((name) => {
-      const rows = xlsxUtils.sheet_to_json(wb.Sheets[name], { header: 1, blankrows: false }) as unknown[][];
-      return rows.length >= 2;
-    }) ?? wb.SheetNames[0];
-  const csv = xlsxUtils.sheet_to_csv(wb.Sheets[sheetName]);
-  if (!csv.trim()) throw new AnalysisError(`Foaia „${sheetName}” din fișierul Excel pare goală.`);
+  const filled = (name: string) => {
+    const ws = wb.Sheets[name];
+    return Object.keys(ws).filter((k) => k[0] !== "!" && ws[k] && ws[k].v !== undefined && ws[k].v !== "").length;
+  };
+  const sheetName = [...wb.SheetNames].sort((a, b) => filled(b) - filled(a))[0];
+  const ws = wb.Sheets[sheetName];
+  if (!ws["!ref"]) throw new AnalysisError(`Foaia „${sheetName}” din fișierul Excel pare goală.`);
+  const range = xlsxUtils.decode_range(ws["!ref"]);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const cellText = (c: { t?: string; v?: unknown; z?: unknown; w?: string } | undefined): string => {
+    if (!c || c.v === undefined || c.v === null) return "";
+    if (c.t === "n") {
+      const v = c.v as number;
+      const fmt = typeof c.z === "string" ? c.z : "";
+      if (fmt && SSF.is_date(fmt)) {
+        const d = SSF.parse_date_code(v);
+        if (d) return `${d.y}-${pad(d.m)}-${pad(d.d)}`;
+      }
+      return Number.isFinite(v) ? String(v).replace(".", ",") : "";
+    }
+    if (c.t === "d") {
+      const d = c.v instanceof Date ? c.v : new Date(String(c.v));
+      return Number.isNaN(d.getTime()) ? String(c.w ?? "") : d.toISOString().slice(0, 10);
+    }
+    if (c.t === "b") return c.v ? "DA" : "NU";
+    if (c.t === "e") return "";
+    return String(c.v);
+  };
+  const esc = (s: string) => /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  const lines: string[] = [];
+  for (let r = range.s.r; r <= range.e.r; r++) {
+    const row: string[] = [];
+    for (let col = range.s.c; col <= range.e.c; col++) row.push(esc(cellText(ws[xlsxUtils.encode_cell({ r, c: col })])));
+    lines.push(row.join(","));
+  }
+  const csv = lines.join("\n");
+  if (!csv.replace(/[,\s]/g, "")) throw new AnalysisError(`Foaia „${sheetName}” din fișierul Excel pare goală.`);
   return csv;
 }
