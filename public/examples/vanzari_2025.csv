@@ -1,0 +1,119 @@
+EXPORT VANZARI — sistem intern
+Perioada: 01.01.2025 - 31.08.2025
+Generat automat la 12.09.2025 09:15. NU MODIFICATI ACEST FISIER.
+
+Nr comanda,Data,Client,Produs,Cantitate,Pret unitar,Valuta,Status
+CMD-090043,27.04.2025,Electra Mobil,Training on-site,3,"1.797,20",RON, Livrata
+CMD-090013,19.01.2025,Delta Foods SA,Implementare,4,"686,45",EUR,Livrata 
+CMD-090037,11.03.2025, Hermes Logistics,Suport Premium,4,"113,03",EUR, Retur
+CMD-090036,11.03.2025,Aurora Retail SRL,Implementare,3,"3.044,59",RON,Livrata 
+CMD-090125,14.08.2025,Lumina Energy,Abonament Cloud Basic,2,"133,45",RON,Livrata 
+CMD-090128,22.08.2025,Meridian Auto,Suport Premium,5,"635,83",RON,Livrata 
+CMD-090016,12.01.2025,Kappa Textile,Implementare,1,"3.333,84",RON,Livrata 
+CMD-090057,25.04.2025,Electra Mobil,Implementare,3,"3.417,11",RON,Livrata
+CMD-090043,27.04.2025,Electra Mobil,Training on-site,1,"1.773,26",RON,livrata
+CMD-090111,23.07.2025,Lumina Energy,Abonament Cloud Basic,1,"142,87",RON,LIVRATA
+CMD-090022,14.02.2025,Delta Foods SA,Licenta Desktop,2,"877,01",RON, Livrata
+,,,,,,,
+CMD-090041,10.03.2025,Kappa Textile,Abonament Cloud Basic,1,"144,52",RON,Livrata
+CMD-090115,17.07.2025,delta foods sa ,Abonament Cloud Pro,2,"405,95",RON,IN CURS
+CMD-090030,11.02.2025,Bistro Central,Abonament Cloud Pro,2,"88,32",EUR,Livrata
+CMD-090005,11.01.2025,Carpat Distribution,Suport Premium,4,"600,60",RON,in curs
+CMD-090026,02.02.2025,Farmacia Vita,Audit securitate,10,"2.287,28",RON, Livrata
+CMD-090025,06.02.2025,Nova Print,Implementare,1,"2.965,64",RON,Livrata 
+CMD-090072,09.05.2025,Nova Print,Modul Raportare,1,"226,27",EUR,IN CURS
+CMD-090107,05.07.2025,hermes logistics,Modul Raportare,3,"1.127,62",RON,LIVRATA
+CMD-090126,21.08.2025,Electra Mobil,Suport Premium,5,"610,14",RON,livrata
+CMD-090059,26.04.2025,Aurora Retail SRL,Abonament Cloud Pro,1,"83,76",EUR,Livrata
+CMD-090078,26.05.2025,Lumina Energy,Licenta Desktop,2,"855,24",RON,RETUR
+CMD-090012,04.01.2025,Grand Hotel Olt,Abonament Cloud Basic,1,"145,55",RON,retur
+CMD-090053,28.04.2025,Carpat Distribution,Audit securitate,3,"2.313,41",RON,LIVRATA
+CMD-090090,20.06.2025,Electra Mobil,Abonament Cloud Pro,1,"419,27",RON, Livrata
+CMD-090046,06.04.2025, Hermes Logistics,Audit securitate,1,"2.218,74",RON,Livrata 
+CMD-090017,01.01.2025,Nova Print,Licenta Desktop,1,"165,11",EUR,livrata
+CMD-090094,07.06.2025,Aurora Retail SRL,Training on-site,2,"1.846,22",RON,livrata
+CMD-090070,13.05.2025,Meridian Auto,Abonament Cloud Basic,5,"139,66",RON,Retur 
+CMD-090073,23.05.2025,Bistro Central ,Audit securitate,4,"450,52",EUR,RETUR
+CMD-090027,11.02.2025,Grand Hotel Olt,Modul Raportare,2,"223,87",EUR,Livrata 
+CMD-090001,05.01.2025,Aurora Retail SRL,Training on-site,4,"333,31",EUR,Livrata
+CMD-090114,03.07.2025,Grand Hotel Olt,Audit securitate,1,"439,75",EUR,Livrata 
+CMD-090058,24.04.2025,Ideal Construct,Audit securitate,1,"484,06",EUR,retur
+CMD-090098,11.06.2025,Delta Foods SA,Abonament Cloud Pro,10,"384,96",RON,Livrata
+CMD-090028,22.02.2025,Nova Print,Modul Raportare,2,"1.206,16",RON,Livrata
+CMD-090035,14.03.2025,Kappa Textile,Abonament Cloud Pro,5,"450,53",RON, Livrata
+CMD-090106,09.07.2025,Meridian Auto,Licenta Desktop,2,"844,30",RON, Livrata
+CMD-090042,04.03.2025,Nova Print,Abonament Cloud Basic,3,"27,17",EUR,Livrata 
+CMD-090084,07.06.2025,Farmacia Vita,Suport Premium,4,"589,32",RON,in curs
+CMD-090004,23.01.2025,delta foods sa ,Modul Raportare,5,"228,25",EUR,livrata
+CMD-090118,02.08.2025,Electra Mobil,Implementare,2,"3.207,07",RON,Anulata 
+CMD-090047,04.04.2025,Nova Print,Modul Raportare,10,"217,73",EUR,Livrata
+CMD-090113,12.07.2025, Hermes Logistics,Implementare,9,"611,86",EUR,Livrata
+CMD-090045,12.04.2025,DELTA FOODS SA,Suport Premium,2,"645,05",RON, Livrata
+CMD-090079,04.05.2025,Farmacia Vita,Licenta Desktop,3,"878,15",RON,Anulata
+CMD-090096,01.06.2025,Delta Foods SA,Suport Premium,1,"116,49",EUR, Livrata
+CMD-090117,08.08.2025,Farmacia Vita,Suport Premium,2,"563,41",RON,Livrata
+CMD-090044,27.04.2025,Bistro Central,Modul Raportare,6,"257,98",EUR,retur
+CMD-090083,06.06.2025,hermes logistics,Suport Premium,1,"564,48",RON,RETUR
+CMD-090007,03.01.2025,Meridian Auto,Audit securitate,2,"2.128,36",RON,livrata
+CMD-090051,10.04.2025,hermes logistics,Audit securitate,4,"474,14",EUR,Anulata 
+CMD-090097,16.06.2025,Aurora Retail SRL,Audit securitate,3,"459,30",EUR,Livrata 
+CMD-090091,21.06.2025,Kappa Textile,Abonament Cloud Pro,3,"93,33",EUR,In curs 
+CMD-090019,10.02.2025,Electra Mobil,Modul Raportare,4,"1.140,62",RON,Retur 
+CMD-090120,03.08.2025,Delta Foods SA,Suport Premium,1,"596,25",RON,livrata
+CMD-090038,03.03.2025,Kappa Textile,Implementare,1,"3.349,75",RON, Livrata
+CMD-090099,28.06.2025,Farmacia Vita,Implementare,3,"3.331,77",RON, Livrata
+CMD-090127,03.08.2025,Ideal Construct,Abonament Cloud Pro,3,"82,49",EUR,LIVRATA
+CMD-090074,07.05.2025,Farmacia Vita,Abonament Cloud Basic,2,"138,64",RON,livrata
+,,,,,,,
+CMD-090093,25.06.2025,Carpat Distribution,Abonament Cloud Basic,2,"136,21",RON,LIVRATA
+CMD-090112,05.07.2025,Aurora Retail SRL,Abonament Cloud Basic,1,"142,90",RON,Livrata 
+CMD-090023,13.02.2025,Carpat Distribution,Audit securitate,1,"2.426,56",RON, Livrata
+CMD-090008,16.01.2025,Electra Mobil,Abonament Cloud Pro,1,"429,86",RON,retur
+CMD-090050,14.04.2025,Meridian Auto,Modul Raportare,4,"251,92",EUR,Livrata 
+CMD-090029,24.02.2025,Carpat Distribution,Audit securitate,1,"2.203,74",RON,Retur 
+CMD-090018,11.01.2025,Farmacia Vita,Licenta Desktop,3,"806,90",RON, Anulata
+CMD-090016,12.01.2025,Kappa Textile,Implementare,1,"3.335,30",RON,Livrata
+CMD-090077,15.05.2025,Hermes Logistics,Implementare,1,"3.009,70",RON,Livrata 
+CMD-090010,18.01.2025,Nova Print,Training on-site,2,"1.720,65",RON,Livrata 
+CMD-090068,04.05.2025,Nova Print,Abonament Cloud Basic,6,"147,46",RON,livrata
+CMD-090002,01.01.2025,Nova Print,Audit securitate,1,"2.152,10",RON,Livrata
+CMD-090061,14.04.2025,Electra Mobil,Suport Premium,11,"553,95",RON,Livrata
+CMD-090092,21.06.2025,Nova Print,Abonament Cloud Basic,4,"130,93",RON,Livrata 
+CMD-090052,14.04.2025,Hermes Logistics,Abonament Cloud Pro,2,"418,36",RON,anulata
+CMD-090075,22.05.2025, Hermes Logistics,Suport Premium,10,"110,73",EUR,anulata
+CMD-090082,17.06.2025,Bistro  Central,Suport Premium,3,"105,93",EUR,Livrata
+CMD-090101,12.06.2025,Nova Print,Abonament Cloud Pro,1,"86,87",EUR,livrata
+CMD-090119,08.08.2025,Kappa Textile,Suport Premium,5,"580,14",RON,Anulata
+CMD-090032,18.03.2025,Nova Print,Implementare,10,"2.932,99",RON,LIVRATA
+CMD-090109,15.07.2025,Bistro  Central,Audit securitate,10,"2.212,09",RON, Retur
+CMD-090055,26.04.2025,hermes logistics,Modul Raportare,4,"1.096,79",RON,livrata
+CMD-090089,13.06.2025,Nova Print,Training on-site,5,"1.854,88",RON,retur
+CMD-090021,12.02.2025,Nova Print,Abonament Cloud Pro,1,"423,80",RON,livrata
+CMD-090108,20.07.2025,Kappa Textile,Training on-site,4,"1.788,65",RON,Anulata 
+CMD-090069,04.05.2025,Electra Mobil,Licenta Desktop,2,"798,37",RON, In curs
+CMD-090062,02.05.2025,Lumina Energy,Abonament Cloud Pro,2,"429,35",RON,Livrata 
+CMD-090066,02.05.2025,Carpat Distribution,Abonament Cloud Pro,5,"403,99",RON,Livrata 
+CMD-090015,13.01.2025,Kappa Textile,Abonament Cloud Pro,5,"435,09",RON,livrata
+CMD-090087,13.06.2025,Lumina Energy,Suport Premium,2,"607,70",RON, Anulata
+CMD-090006,10.01.2025,Meridian Auto,Licenta Desktop,4,"816,40",RON,livrata
+CMD-090076,20.05.2025,Lumina Energy,Abonament Cloud Pro,1,"81,17",EUR,LIVRATA
+CMD-090034,09.03.2025,DELTA FOODS SA,Training on-site,3,"338,79",EUR,livrata
+CMD-090033,15.03.2025,Bistro Central,Abonament Cloud Basic,1,"28,13",EUR,LIVRATA
+CMD-090003,04.01.2025,Aurora Retail SRL,Licenta Desktop,11,"789,12",RON, Livrata
+CMD-090024,17.02.2025,Grand Hotel Olt,Abonament Cloud Basic,1,"147,67",RON,Livrata
+CMD-090086,22.06.2025,Carpat Distribution,Implementare,3,"3.430,48",RON,Livrata 
+CMD-090033,15.03.2025,Bistro Central,Abonament Cloud Basic,1,"28,28",EUR,Livrata 
+CMD-090121,23.08.2025,Hermes Logistics,Abonament Cloud Basic,3,"151,38",RON,LIVRATA
+CMD-090100,01.06.2025,Bistro Central,Modul Raportare,1,"1.054,92",RON,Livrata
+CMD-090127,03.08.2025,Ideal Construct,Abonament Cloud Pro,4,"85,60",EUR, Livrata
+CMD-090095,09.06.2025,Electra Mobil,Suport Premium,5,"582,76",RON,LIVRATA
+CMD-090102,27.07.2025,Grand Hotel Olt,Suport Premium,2,"544,11",RON,Livrata
+CMD-090049,15.04.2025,Delta Foods SA,Suport Premium,2,"624,49",RON,Anulata 
+CMD-090111,23.07.2025,Lumina Energy,Abonament Cloud Basic,1,"146,04",RON,livrata
+,,,,,,,
+CMD-090500,14.02.2025,Vechi Partener SRL,Implementare,3,"2.150,00",RON,Livrata
+CMD-090501,03.04.2025,Vechi Partener SRL,Suport Premium,2,"980,50",RON,Livrata
+CMD-090502,22.05.2025,Vechi Partener SRL,Training on-site,1,"1.640,00",RON,Anulata
+CMD-090503,09.07.2025,Vechi Partener SRL,Audit securitate,2,"3.120,00",RON,Livrata
+,,,,,,,
+TOTAL GENERAL,,,,,,,

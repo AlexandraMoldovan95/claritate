@@ -33,6 +33,7 @@ export interface Deps {
 
 export const EXAMPLES = [
   { file: "vanzari_2026.csv", label: "Vânzări 2026" },
+  { file: "vanzari_2025.csv", label: "Vânzări 2025" },
   { file: "vanzari_distributie_2026.csv", label: "Distribuție" },
   { file: "vanzari_enterprise_b2b_2026.csv", label: "Enterprise B2B" },
   { file: "vanzari_servicii_cloud_2026.csv", label: "Servicii cloud" },

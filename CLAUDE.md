@@ -41,7 +41,7 @@ O aplicație web publică (merge și pe telefon) în care urci un fișier **CSV 
 
 ```
 api/[...route].ts           funcția Node.js (Vercel) — punctul de intrare activ
-api/_examples.generated.ts  cele 4 CSV-uri demo, embedate (nu are sens pe Vercel să citim de pe disc la fiecare request)
+api/_examples.generated.ts  cele 5 CSV-uri demo, embedate — se regenerează cu `npx tsx scripts/generate-examples.ts` după orice schimbare în public/examples/
 backend/app.ts              rutele Hono + detectarea/conversia fișierelor Excel înainte de analyze()
 backend/db.ts                vercelKvStore() (activ, Upstash Redis) · sqliteStore()/memoryStore() (istoric/teste locale)
 backend/core/csv.ts         citire CSV robustă (ghilimele, separator , ; tab |, CRLF, BOM)
@@ -63,9 +63,8 @@ scripts/validate-upload-xlsx.ts    /api/upload cu .xlsx prin multipart, inclusiv
 tests/core_test.ts          8 teste Deno (istoric, Val Town): cifrele de referință, CSV sintetic neconform, plan invalid
 PLAN.md · CLAUDE.md · DESIGN.md · docs/ · README.md · README-VERCEL.md
 
-main.ts · dev.ts · deno.json · examples/ · frontend/   varianta originală Val Town/Deno — păstrate ca istoric,
-                                                          nu mai rulează (backend/app.ts importă acum "hono" din npm,
-                                                          nu "npm:hono" specific Deno); public/ e copia activă
+legacy/                     varianta originală Val Town/Deno (frontend/, examples/, main.ts, dev.ts) — doar istoric, nu mai rulează;
+                            public/ e copia activă. deno.json rămâne în rădăcină pentru `deno task test`.
 ```
 
 Rute active: `GET /` (pagina), `POST /api/upload` (multipart sau JSON, CSV **sau** Excel, max 5 MB), `GET /api/view?id=` (rezultatul unui upload), `POST /api/set-roles?id=` (corectarea manuală a rolului unei coloane), `POST /api/ask?id=` (întrebare; `&format=csv` = comenzile folosite), `GET /api/pivot?id=&rows=&cols=&measure=&currency=&month=` (pivot; `&format=csv`), `GET /api/report?id=&month=` (datele raportului), `GET /api/compare?a=&b=&currency=` (comparație), `POST /api/compare-ask?a=&b=` (întrebare pe comparație), `GET /c/:a/:b` (link de partajat pentru comparație, rescris către `/index.html`), `GET /d/:id` (link de partajat, rescris către `/index.html`), `GET /api/examples`, `GET /examples/:name`, `GET /api/roles`.
@@ -74,7 +73,9 @@ Rute active: `GET /` (pagina), `POST /api/upload` (multipart sau JSON, CSV **sau
 
 ## Datele de test (ce neconformități există în realitate)
 
-4 fișiere CSV în `examples/`: `vanzari_2026.csv`, `vanzari_distributie_2026.csv`, `vanzari_enterprise_b2b_2026.csv`, `vanzari_servicii_cloud_2026.csv`. Toate au aceleași 8 coloane — `Nr comanda, Data, Client, Produs, Cantitate, Pret unitar, Valuta, Status` — dar **în ordine diferită** în fiecare fișier. Probleme găsite:
+**Exemplul 5, `vanzari_2025.csv`** (adăugat 15 nov. 2026): aceeași firmă ca `vanzari_2026.csv`, cu un an în urmă — generat din el (date mutate în 2025, cantități/prețuri ușor schimbate, ~15% din comenzi scoase, „Jupiter Media” scos ca să apară „nou” în 2026, „Vechi Partener SRL” adăugat ca să apară „dispărut”), cu aceeași murdărie de export. Folosit de butonul „Încearcă o comparație: 2025 → 2026” de pe pagina de start.
+
+4 fișiere CSV în `public/examples/` (originalele): `vanzari_2026.csv`, `vanzari_distributie_2026.csv`, `vanzari_enterprise_b2b_2026.csv`, `vanzari_servicii_cloud_2026.csv`. Toate au aceleași 8 coloane — `Nr comanda, Data, Client, Produs, Cantitate, Pret unitar, Valuta, Status` — dar **în ordine diferită** în fiecare fișier. Probleme găsite:
 
 - 3 rânduri de preambul narativ (`EXPORT VANZARI — sistem intern`, `Perioada: …`, `Generat automat…`) + un rând gol înainte de antet;
 - rânduri `TOTAL PARTIAL` și `TOTAL GENERAL` intercalate (au sumă, dar nu sunt comenzi);

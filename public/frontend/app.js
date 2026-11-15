@@ -135,6 +135,17 @@
     } catch (e) { setStatus(e.message, "error"); }
   }
 
+  async function compareDemo() {
+    setStatus("Încarc cele două exemple…", "loading");
+    try {
+      const up = (f) => api("/api/upload", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ example: f }) });
+      const [a, b] = await Promise.all([up("vanzari_2025.csv"), up("vanzari_2026.csv")]);
+      state.id = a.id; state.analysis = a.analysis; // „Înapoi la dashboard” duce la 2025
+      setStatus("");
+      await loadCompare(a.id, b.id, true);
+    } catch (e) { setStatus(e.message, "error"); }
+  }
+
   async function loadById(id) {
     setStatus("Deschid dashboard-ul…", "loading");
     try { show(await api(`/api/view?id=${encodeURIComponent(id)}`), false); }
@@ -1205,6 +1216,14 @@
       $("#examples").replaceChildren(...examples.map((ex) => el("button", {
         class: "example-btn", type: "button", onclick: () => uploadExample(ex.file), "aria-label": `Încearcă exemplul ${ex.label}`,
       }, [el("span", { html: ICON.file, "aria-hidden": "true" }), ex.label])));
+      // comparația demo: aceeași firmă, 2025 față de 2026 (ca să se poată încerca fără fișiere proprii)
+      const has = (f) => examples.some((e) => e.file === f);
+      if (has("vanzari_2025.csv") && has("vanzari_2026.csv")) {
+        $("#examples").append(el("button", { class: "example-btn example-compare", type: "button", onclick: compareDemo }, [
+          el("span", { "aria-hidden": "true", html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4"/></svg>' }),
+          "Încearcă o comparație: 2025 → 2026",
+        ]));
+      }
     } catch { /* fără exemple */ }
   }
 

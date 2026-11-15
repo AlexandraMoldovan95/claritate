@@ -7,7 +7,7 @@ import { analyze, AnalysisError } from "../backend/core/analyze.ts";
 import { answerQuestion } from "../backend/core/ask.ts";
 import { parseNumber, parseDate, normalizeStatus, looksNumeric } from "../backend/core/normalize.ts";
 
-const load = (f: string) => Deno.readTextFile(new URL(`../examples/${f}`, import.meta.url));
+const load = (f: string) => Deno.readTextFile(new URL(`../public/examples/${f}`, import.meta.url));
 const byCur = <T extends { currency: string }>(xs: T[], c: string) => xs.find((x) => x.currency === c)!;
 
 Deno.test("vanzari_2026: curățare și cifre de referință", async () => {

@@ -12,7 +12,7 @@ You upload a sales CSV **or an Excel file** (`.xlsx`/`.xlsm`/`.xls`) and the app
 
 ## How to use it
 
-1. Open the link and **drag a CSV or Excel file** onto the page, or click one of the **4 non-conforming examples**.
+1. Open the link and **drag a CSV or Excel file** onto the page, or click one of the **5 non-conforming examples** — or **"Încearcă o comparație: 2025 → 2026"** to see the two-file comparison without your own files.
 2. See immediately **what the app understood** from the file (each column's detected role, which you can correct) and **what it cleaned** (the rows removed and why).
 3. Go through the **6 tabs**, pick a **currency** (RON / EUR), and ask questions.
 4. **Copy the link** to send the dashboard to someone (every uploaded file gets its own address, `/d/…`).
@@ -113,7 +113,7 @@ The code is ready for an optional AI planner that would choose **only the plan**
 
 ```
 api/[...route].ts         Node.js serverless function entry point — the active deployment
-api/_examples.generated.ts the 4 demo CSVs, embedded (no point reading static files from disk on every request)
+api/_examples.generated.ts the 5 demo CSVs, embedded — regenerate with `npx tsx scripts/generate-examples.ts`
 backend/app.ts            routes (upload, dashboard, questions) + Excel detection/conversion before analyze()
 backend/db.ts             storage: vercelKvStore() (active, Upstash Redis), sqliteStore()/memoryStore() (unused/local)
 backend/core/csv.ts       CSV reading (quotes, separator, BOM)
@@ -132,13 +132,11 @@ scripts/validate-shapes.ts         CSVs with reordered/renamed/missing/extra col
 scripts/validate-xlsx.ts           a real multi-sheet .xlsx, native Excel dates/numbers, caught the total-row bug
 scripts/validate-upload-xlsx.ts    /api/upload with a real .xlsx over HTTP, including a mislabeled file
 tests/core_test.ts        the 10 original tests (figures, not the Vercel plumbing)
-examples/ · frontend/     the original Val Town copies of what's now duplicated into public/
+legacy/                   the original Val Town version (frontend/, examples/, main.ts, dev.ts) — history only; public/ is the live copy
 PLAN.md · CLAUDE.md · DESIGN.md · docs/ · README-VERCEL.md
 materiale-referinta/      the original brief, the plugin list, the reference design system, and the original demo datasets
 
-main.ts · dev.ts · deno.json   the old Val Town/Deno entry points — kept for history only,
-                                 don't run anymore locally since backend/app.ts now imports
-                                 "hono" from npm instead of Deno's npm: specifier
+deno.json                 `deno task test` (the 10 original tests)
 ```
 
 **Running locally (Vercel version):** no dev server wired up yet — `npm install` then `npx tsx scripts/smoke-test.ts` exercises the ported backend directly (upload, dashboard, ask, 404, 400); the `validate-*.ts` scripts exercise the template-agnostic parsing and Excel support the same way. A real local server would be `vercel dev` (Vercel CLI, after `vercel link`).
@@ -157,4 +155,4 @@ main.ts · dev.ts · deno.json   the old Val Town/Deno entry points — kept for
 - Currencies are **not converted**: each keeps its own figures.
 - Anyone with a dashboard's link can view it (there's no login), so the page explicitly says **not to upload confidential data**.
 - Answers come from a **rule-based planner** (code, no AI): it understands the phrasings it was written for (~80 question types tested) and refuses clearly when it doesn't understand, but free-form questions outside those patterns get a refusal rather than an answer.
-- Upstash Redis entries expire after **90 days** — an uploaded/shared dashboard older than that will 404. The 4 built-in examples are unaffected (they're static files, not stored in Redis).
+- Upstash Redis entries expire after **90 days** — an uploaded/shared dashboard older than that will 404. The 5 built-in examples are unaffected (they're static files, not stored in Redis).
