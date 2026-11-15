@@ -51,6 +51,11 @@ A real example, `vanzari_2026.csv`: **145 rows** under the header → **129 vali
 
 The full cleaning report is visible on the page ("**What I cleaned**" → "See the removed rows").
 
+## Pivot table and a ready-to-send report
+
+- **Pivot table** (7th tab): pick what goes on rows (client, product, agent, city, month, status…), on columns, and what is added up (delivered value, value across all statuses, number of orders, delivered quantity). Defaults to **Client × Month, delivered value**, with row, column and grand totals — the Excel pivot most people build on a sales export, with no formulas. Downloadable as CSV.
+- **Report** ("Raport PDF" button): key figures and the monthly chart, top clients and products, the pivot configured on screen, lost revenue and what was cleaned — for the whole file or a single month. Saved as PDF with the browser's print dialog (A4 print stylesheet; no PDF library, no server).
+
 ## How questions are answered: code, not AI
 
 ```
@@ -124,6 +129,13 @@ main.ts · dev.ts · deno.json   the old Val Town/Deno entry points — kept for
 
 **Running locally (Vercel version):** no dev server wired up yet — `npm install` then `npx tsx scripts/smoke-test.ts` exercises the ported backend directly (upload, dashboard, ask, 404, 400); the `validate-*.ts` scripts exercise the template-agnostic parsing and Excel support the same way. A real local server would be `vercel dev` (Vercel CLI, after `vercel link`).
 **Tests:** `deno task test` still runs the original 10 tests against `backend/core/*` (unaffected by the migration or the Excel addition, since that code's public behavior didn't change — only a bug fix in the total-row detection, which the new scripts cover).
+
+## Next steps (deliberately out of scope for now)
+
+- **Comparing two files** with the same structure (this year vs last year, two shops).
+- **Lookups across files** (VLOOKUP-style), e.g. a cost list joined to the orders to get profit — with a report of unmatched keys and duplicate keys, the two ways a join silently gets totals wrong.
+- **Private data**: today anyone with a dashboard link can open it; real business use would need accounts, expiring links, or browser-only analysis.
+- **Optional AI planner** (see above).
 
 ## Known limits
 

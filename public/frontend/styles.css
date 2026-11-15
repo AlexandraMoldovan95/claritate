@@ -368,3 +368,69 @@ footer .container { display: flex; flex-wrap: wrap; justify-content: space-betwe
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .upload-card, .upload-card:hover { transform: none !important; }
 }
+
+/* ---------------------------------------------------------------- 7 tab-uri: 2 / 3 / 4 pe rând */
+@media (min-width: 1024px) { .tabs { grid-template-columns: repeat(4, 1fr); } }
+
+/* ---------------------------------------------------------------- tabel pivot */
+.pv-controls { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 12px; }
+@media (min-width: 640px) { .pv-controls { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.pv-field { display: grid; gap: 4px; font-size: .8rem; font-weight: 600; color: var(--text-muted); }
+.pv-field select {
+  width: 100%; min-height: 44px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-input);
+  background: var(--surface); font-size: .9rem; color: var(--text); font-weight: 500;
+}
+.pv-field select:focus { outline: 2px solid var(--primary); outline-offset: 1px; border-color: var(--primary); }
+.pivot-scroll { max-height: 70vh; overflow: auto; }
+table.pivot thead th { z-index: 2; }
+table.pivot tbody th, table.pivot tfoot th {
+  position: sticky; left: 0; z-index: 1; background: var(--surface); text-align: left; font-weight: 600;
+  padding: 8px 10px; border-top: 1px solid var(--border-soft); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+}
+table.pivot thead th:first-child { left: 0; z-index: 3; }
+table.pivot td.zero { color: var(--text-muted); }
+table.pivot td.total { font-weight: 700; background: var(--surface-2) !important; }
+table.pivot tfoot td, table.pivot tfoot th { font-weight: 700; background: var(--surface-2); border-top: 2px solid var(--border); position: sticky; bottom: 0; }
+table.pivot tfoot th { z-index: 2; }
+
+/* ---------------------------------------------------------------- raport (ecran) */
+body.report-open { overflow: hidden; }
+.report { position: fixed; inset: 0; z-index: 50; background: var(--bg); overflow: auto; }
+.report-bar {
+  position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: end;
+  padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.report-bar h2 { margin: 0; font-size: 1.1rem; align-self: center; flex: 1 0 100%; }
+@media (min-width: 720px) { .report-bar h2 { flex: 0 0 auto; margin-right: auto; } }
+.report-month { min-width: 200px; flex: 1 1 200px; }
+@media (min-width: 720px) { .report-month { flex: 0 1 240px; } }
+.report-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.report-page { max-width: 900px; margin: 16px auto 40px; padding: 20px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
+@media (min-width: 640px) { .report-page { padding: 32px 36px; } }
+.report-head h1 { margin: 2px 0 6px; font-size: 1.5rem; word-break: break-word; }
+.report-kicker { margin: 0; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--primary-700); }
+.report-meta { margin: 0; color: var(--text-muted); font-size: .88rem; }
+.report-section { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--border); }
+.report-section h2 { margin: 0 0 12px; font-size: 1.15rem; }
+.report-section h3 { margin: 16px 0 8px; font-size: .95rem; }
+.report-section .kpis { margin-bottom: 4px; }
+.report-col h3 { margin-top: 0; }
+.report-foot { margin: 28px 0 0; font-size: .8rem; color: var(--text-muted); }
+
+/* ---------------------------------------------------------------- raport (tipărire / PDF) */
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body.report-open > *:not(#report) { display: none !important; }
+  body.report-open { overflow: visible; background: #fff; }
+  .report { position: static; overflow: visible; background: #fff; }
+  .report-bar { display: none; }
+  .report-page { max-width: none; margin: 0; padding: 0; border: 0; border-radius: 0; }
+  .report-section { break-inside: auto; }
+  .report-section h2, .report-section h3 { break-after: avoid; }
+  .kpi, .report-col, table.pivot tr { break-inside: avoid; }
+  .pivot-scroll, .table-scroll { max-height: none; overflow: visible; border: 0; }
+  table.pivot { font-size: 8.5pt; }
+  table.pivot th, table.pivot td { position: static !important; padding: 4px 6px; }
+  table.data tbody tr:nth-child(even) td { background: #fff; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

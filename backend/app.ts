@@ -7,6 +7,8 @@ import { read as readWorkbook, SSF, utils as xlsxUtils } from "xlsx";
 import { analyze, AnalysisError, MAX_BYTES } from "./core/analyze.js";
 import { answerQuestion, schemaFor, validatePlan } from "./core/ask.js";
 import { ROLE_LABELS, type Role } from "./core/detect.js";
+import { buildPivot, defaultPivotSpec, MEASURES, pivotCsv, pivotDimensions, type Measure } from "./core/pivot.js";
+import { buildDashboards } from "./core/aggregate.js";
 import { OG_IMAGE } from "./og_image.js";
 
 export interface StoredUpload { id: string; filename: string; raw: string; overrides: Record<string, Role> }
@@ -130,6 +132,49 @@ export function createApp(deps: Deps) {
     if (!up) return c.json({ error: "Nu am găsit acest dashboard. Poate linkul e greșit." }, 404);
     const { analysis } = analyze(up.raw, up.filename, up.overrides);
     return c.json({ id: up.id, analysis });
+  });
+
+  // Tabel pivot. Fără parametri → pivotul implicit (Client × Lună, valoare livrată).
+  // ?format=csv → același pivot ca fișier CSV.
+  app.get("/api/pivot", async (c) => {
+    const up = await load(c.req.query("id") ?? "");
+    if (!up) return c.json({ error: "Nu am găsit acest dashboard." }, 404);
+    const { analysis, records } = analyze(up.raw, up.filename, up.overrides);
+    const def = defaultPivotSpec(analysis);
+    const q = (k: string) => c.req.query(k);
+    const month = q("month") || undefined;
+    if (month && !/^\d{4}-\d{2}$/.test(month)) return c.json({ error: "Luna trebuie să fie de forma AAAA-LL." }, 400);
+    const spec = {
+      rows: q("rows") || def.rows,
+      cols: q("cols") === "" || q("cols") === "none" ? null : q("cols") || def.cols,
+      measure: (q("measure") || def.measure) as Measure,
+      currency: q("currency") ?? undefined,
+      month,
+    };
+    const res = buildPivot(analysis, records, spec);
+    if (!res.pivot) return c.json({ error: res.error }, 400);
+    if (q("format") === "csv") {
+      return c.body(pivotCsv(res.pivot), 200, { "content-type": "text/csv; charset=utf-8", "content-disposition": 'attachment; filename="pivot.csv"' });
+    }
+    return c.json({ pivot: res.pivot, dimensions: pivotDimensions(analysis), measures: MEASURES, default: def });
+  });
+
+  // Raportul de trimis: dashboard-urile pe tot fișierul sau pe o singură lună (?month=AAAA-LL).
+  app.get("/api/report", async (c) => {
+    const up = await load(c.req.query("id") ?? "");
+    if (!up) return c.json({ error: "Nu am găsit acest dashboard." }, 404);
+    const { analysis, records } = analyze(up.raw, up.filename, up.overrides);
+    const month = c.req.query("month") || null;
+    const months = [...new Set(records.map((r) => r.month).filter(Boolean) as string[])].sort();
+    if (month && !months.includes(month)) return c.json({ error: "Nu există comenzi în luna aleasă." }, 400);
+    const subset = month ? records.filter((r) => r.month === month) : records;
+    const dashboards = month
+      ? buildDashboards(subset, {
+          hasStatus: analysis.meta.hasStatus, hasDate: analysis.meta.hasDate,
+          customer: analysis.meta.customerColumn ?? undefined, product: analysis.meta.productColumn ?? undefined,
+        })
+      : analysis.dashboards;
+    return c.json({ month, months, meta: analysis.meta, report: analysis.report, dashboards, orders: subset.length });
   });
 
   app.post("/api/set-roles", async (c) => {

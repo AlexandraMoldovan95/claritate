@@ -8,8 +8,9 @@ Citește-l la începutul fiecărei sesiuni. Detaliile de design sunt în `DESIGN
 
 O aplicație web publică (merge și pe telefon) în care urci un fișier **CSV sau Excel** (`.xlsx`/`.xlsm`/`.xls`) și primești automat:
 1. structura detectată și datele curățate (cu raport despre ce s-a eliminat și de ce);
-2. **6 dashboard-uri** cu cifre cheie, tabele și grafice;
-3. un câmp în care pui o întrebare în română despre date și primești răspuns.
+2. **6 dashboard-uri** cu cifre cheie, tabele și grafice, plus un **tabel pivot** configurabil;
+3. un câmp în care pui o întrebare în română despre date și primești răspuns;
+4. un **raport gata de trimis** (tot fișierul sau o lună), salvat ca PDF din browser.
 
 ## Cerințe de produs (nenegociabile)
 
@@ -49,6 +50,7 @@ backend/core/clean.ts       curățare deterministă + raport de rânduri elimin
 backend/core/aggregate.ts   cele 6 dashboard-uri (doar aritmetică în cod)
 backend/core/analyze.ts     pipeline complet: text → analiză + rânduri curate
 backend/core/ask.ts         întrebare → plan JSON (reguli, fără model) → validare → calcul (cod)
+backend/core/pivot.ts       tabel pivot: rânduri × coloane × valoare, cu totaluri + export CSV
 public/                     fișiere statice servite direct de Vercel: index.html, frontend/, examples/, og.jpg
 vercel.json                 rewrite /d/:id → /index.html, ca linkurile de dashboard partajate să funcționeze
 scripts/smoke-test.ts              backend/app.ts + db.ts rulează corect sub Node real cu hono din npm
@@ -64,7 +66,7 @@ main.ts · dev.ts · deno.json · examples/ · frontend/   varianta originală V
                                                           nu "npm:hono" specific Deno); public/ e copia activă
 ```
 
-Rute active: `GET /` (pagina), `POST /api/upload` (multipart sau JSON, CSV **sau** Excel, max 5 MB), `GET /api/view?id=` (rezultatul unui upload), `POST /api/set-roles?id=` (corectarea manuală a rolului unei coloane), `POST /api/ask?id=` (întrebare), `GET /d/:id` (link de partajat, rescris către `/index.html`), `GET /api/examples`, `GET /examples/:name`, `GET /api/roles`.
+Rute active: `GET /` (pagina), `POST /api/upload` (multipart sau JSON, CSV **sau** Excel, max 5 MB), `GET /api/view?id=` (rezultatul unui upload), `POST /api/set-roles?id=` (corectarea manuală a rolului unei coloane), `POST /api/ask?id=` (întrebare; `&format=csv` = comenzile folosite), `GET /api/pivot?id=&rows=&cols=&measure=&currency=&month=` (pivot; `&format=csv`), `GET /api/report?id=&month=` (datele raportului), `GET /d/:id` (link de partajat, rescris către `/index.html`), `GET /api/examples`, `GET /examples/:name`, `GET /api/roles`.
 
 **De ce `?id=` și nu `/api/view/:id`:** pe Vercel, orice rută `/api/...` cu 2+ segmente de path dădea 404 direct de la platformă, înainte să ajungă la funcție — indiferent de runtime sau de configurarea din `vercel.json`. Cauza exactă nu a fost găsită după o investigație extinsă; rutele cu un singur segment sub `/api/...` au mers mereu fără probleme, deci id-ul dashboard-ului s-a mutat din path în query string. Detalii în `README-VERCEL.md`.
 
@@ -147,6 +149,12 @@ Dacă numele nu spune nimic, rolul se deduce din conținut. Utilizatorul vede ro
 Reguli pentru dashboard-ul 4:
 - Lunile **cu comenzi, dar fără venit livrat** intră în calcul cu 0 și pot fi „cea mai slabă lună”; se afișează explicit (ex. „ian. și feb. 2026: nicio comandă livrată”). Lunile fără nicio comandă nu se afișează.
 - Ultima lună din date se marchează **„lună incompletă”** dacă datele se opresc înainte de sfârșitul ei (ultima dată < ultima zi a lunii).
+
+## Tabel pivot (`pivot.ts`) și raport
+
+- **Pivot** = al 7-lea tab. Rânduri: orice coloană categorică, Lună, Status (sau Monedă, dacă sunt mai multe). Coloane: la fel sau „fără”. Valoare: valoare livrată (implicit), valoare pe toate statusurile, număr de comenzi, cantitate livrată. **Implicit: Client × Lună, valoare livrată** (decizie Meko). Totaluri pe rânduri, coloane și total general; sumele de bani sunt pe moneda aleasă sus (fără conversie). Peste 24 de coloane → restul în „Altele”. Descărcare CSV (`;` + BOM). Prima coloană și rândul de total rămân fixe la derulare; pe telefon tabelul se derulează doar în interiorul lui.
+- **Raport** = butonul „Raport PDF” din antet. Perioada: **tot fișierul sau o lună aleasă**. Conține (decizie Meko): cifre cheie + grafic pe luni (graficul doar pe tot fișierul), top clienți și produse, **pivotul configurat în tab**, venit pierdut + ce s-a curățat. „Salvează ca PDF” = tipărirea browserului (`window.print()`), cu stil `@media print` pe A4 — fără bibliotecă și fără server de PDF. Curățarea din raport se referă mereu la tot fișierul.
+- **În afara scope-ului (pentru mai târziu):** comparația între două fișiere, VLOOKUP (ex. listă de costuri → profit), conturi/date private. Detalii în README → „Next steps”.
 
 ## Întrebări în română (`ask.ts`)
 

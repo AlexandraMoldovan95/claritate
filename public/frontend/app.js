@@ -86,7 +86,7 @@
   window.addEventListener("scroll", hideTip, { passive: true });
 
   // ------------------------------------------------------------------ stare
-  const state = { id: null, analysis: null, currency: null, tab: "summary", roles: {} };
+  const state = { id: null, analysis: null, currency: null, tab: "summary", roles: {}, pivot: null };
 
   const TABS = [
     { id: "summary", label: "Sumar general" },
@@ -95,6 +95,7 @@
     { id: "months", label: "Cea mai bună / slabă lună" },
     { id: "top", label: "Top clienți și produse" },
     { id: "health", label: "Sănătatea comenzilor" },
+    { id: "pivot", label: "Tabel pivot" },
   ];
 
   // ------------------------------------------------------------------ API
@@ -138,6 +139,7 @@
   }
 
   function show(data, push) {
+    if (state.id !== data.id) state.pivot = null; // pivotul ales ține de fișier
     state.id = data.id;
     state.analysis = data.analysis;
     const curs = data.analysis.dashboards.summary.currencies.map((c) => c.currency);
@@ -288,7 +290,7 @@
     hideTip();
     const panel = $("#panel");
     panel.replaceChildren();
-    const fn = { summary: pSummary, delivered: pDelivered, lost: pLost, months: pMonths, top: pTop, health: pHealth }[state.tab];
+    const fn = { summary: pSummary, delivered: pDelivered, lost: pLost, months: pMonths, top: pTop, health: pHealth, pivot: pPivot }[state.tab];
     fn(panel, state.analysis.dashboards, state.currency);
   }
 
@@ -630,6 +632,193 @@
     panel.append(grid);
   }
 
+
+  // ------------------------------------------------------------------ pivot
+  // Ce e pe rânduri / coloane și ce se calculează; calculul îl face serverul (backend/core/pivot.ts).
+  function pivotQuery(spec, extra = {}) {
+    const q = new URLSearchParams({ id: state.id });
+    if (spec) {
+      q.set("rows", spec.rows); q.set("cols", spec.cols ?? "none"); q.set("measure", spec.measure);
+      if (state.currency !== null) q.set("currency", state.currency);
+    }
+    for (const [k, v] of Object.entries(extra)) if (v) q.set(k, v);
+    return q;
+  }
+
+  function pivotTable(p) {
+    const isMoney = p.spec.measure === "delivered" || p.spec.measure === "value";
+    const fmt = (v) => v === 0 ? "—" : isMoney ? nf2.format(v) : nf0.format(v);
+    const corner = p.colLabel ? `${p.rowLabel} ↓  ${p.colLabel} →` : p.rowLabel;
+    const headRow = [corner, ...p.columns.map((c) => c.label), "Total"];
+    return el("div", { class: "table-scroll pivot-scroll" }, el("table", { class: "data pivot" }, [
+      el("thead", {}, el("tr", {}, headRow.map((h, i) => el("th", { scope: "col", class: i ? "num" : "", text: h })))),
+      el("tbody", {}, p.rows.map((r) => el("tr", {}, [
+        el("th", { scope: "row", text: r.key }),
+        ...r.cells.map((v) => el("td", { class: "num" + (v === 0 ? " zero" : ""), text: fmt(v) })),
+        el("td", { class: "num total", text: fmt(r.total) }),
+      ]))),
+      el("tfoot", {}, el("tr", {}, [
+        el("th", { scope: "row", text: "Total" }),
+        ...p.colTotals.map((v) => el("td", { class: "num", text: fmt(v) })),
+        el("td", { class: "num total", text: fmt(p.grand) }),
+      ])),
+    ]));
+  }
+
+  async function pPivot(panel) {
+    panel.append(head("Tabel pivot", "Alegi ce e pe rânduri, ce e pe coloane și ce se adună — ca un pivot din Excel, fără formule. Totalurile sunt calculate de cod."));
+    const box = el("div", { class: "pivot-box" }, el("span", { class: "loading" }, [el("span", { class: "spinner", "aria-hidden": "true" }), "Calculez…"]));
+    panel.append(box);
+    const id = state.id;
+    try {
+      const res = await api(`/api/pivot?${pivotQuery(state.pivot)}`);
+      if (state.tab !== "pivot" || state.id !== id) return; // utilizatorul a plecat între timp
+      state.pivot = { rows: res.pivot.spec.rows, cols: res.pivot.spec.cols, measure: res.pivot.spec.measure };
+      state.pivotMeta = { dimensions: res.dimensions, measures: res.measures };
+      const p = res.pivot;
+      const pick = (label, key, options, includeNone) => {
+        const sel = el("select", { id: `pv-${key}`, onchange: (e) => {
+          const v = e.target.value;
+          state.pivot = { ...state.pivot, [key]: key === "cols" && v === "none" ? null : v };
+          if (state.pivot.cols && state.pivot.cols === state.pivot.rows) state.pivot.cols = null;
+          renderPanel();
+        } }, [
+          ...(includeNone ? [el("option", { value: "none", text: "— fără coloane —" })] : []),
+          ...options.map((o) => el("option", { value: o.id, text: o.label })),
+        ]);
+        sel.value = (key === "cols" ? state.pivot.cols ?? "none" : state.pivot[key]);
+        return el("label", { class: "pv-field", for: `pv-${key}` }, [el("span", { text: label }), sel]);
+      };
+      const dims = res.dimensions;
+      const controls = el("div", { class: "pv-controls" }, [
+        pick("Rânduri", "rows", dims, false),
+        pick("Coloane", "cols", dims.filter((d) => d.id !== state.pivot.rows), true),
+        pick("Valoare", "measure", res.measures.filter((m) => state.analysis.meta.hasValue || m.id === "count"), false),
+      ]);
+      const meta = [`${nf0.format(p.orders)} ${p.orders === 1 ? "comandă" : "comenzi"}`];
+      if (p.currency !== null) meta.push(`sume în ${curLabel(p.currency)}`);
+      const foot = el("div", { class: "detail-foot" }, [
+        el("span", { text: meta.join(" · ") }),
+        el("button", { class: "btn-link", type: "button", text: "Descarcă pivotul (CSV)", onclick: () => download(`/api/pivot?${pivotQuery(state.pivot, { format: "csv" })}`, "pivot.csv", foot) }),
+      ]);
+      box.replaceChildren(controls,
+        p.rows.length ? pivotTable(p) : emptyState("Nu există comenzi pentru această combinație."),
+        foot,
+        ...p.notes.map((n) => el("p", { class: "note-line", text: n })));
+    } catch (e) {
+      box.replaceChildren(emptyState(e.message));
+    }
+  }
+
+  async function download(url, filename, where) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("Nu am putut pregăti fișierul.");
+      const href = URL.createObjectURL(await r.blob());
+      const link = el("a", { href, download: filename });
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(href), 2000);
+    } catch (e) { where.append(el("span", { class: "error-text", text: e.message })); }
+  }
+
+  // ------------------------------------------------------------------ raport (de salvat ca PDF)
+  // Cifre cheie + grafic pe luni, top clienți și produse, pivotul ales, venit pierdut + ce s-a curățat.
+  // Tot fișierul sau o singură lună. „Salvează ca PDF” = tipărirea browserului (fără bibliotecă).
+  async function openReport(month = "") {
+    const dlg = $("#report");
+    dlg.hidden = false;
+    document.body.classList.add("report-open");
+    const body = $("#reportBody");
+    body.replaceChildren(el("span", { class: "loading" }, [el("span", { class: "spinner", "aria-hidden": "true" }), "Pregătesc raportul…"]));
+    $("#reportClose").focus();
+    try {
+      const q = new URLSearchParams({ id: state.id }); if (month) q.set("month", month);
+      const [rep, piv] = await Promise.all([
+        api(`/api/report?${q}`),
+        api(`/api/pivot?${pivotQuery(state.pivot, { month })}`).catch(() => null),
+      ]);
+      const sel = $("#reportMonth");
+      sel.replaceChildren(el("option", { value: "", text: "Tot fișierul" }), ...rep.months.map((m) => el("option", { value: m, text: monthLong(m) })));
+      sel.value = month;
+      renderReport(body, rep, piv && piv.pivot);
+    } catch (e) {
+      body.replaceChildren(emptyState(e.message));
+    }
+  }
+
+  function closeReport() {
+    $("#report").hidden = true;
+    document.body.classList.remove("report-open");
+    $("#openReport").focus();
+  }
+
+  function renderReport(body, rep, pivot) {
+    const d = rep.dashboards, cur = state.currency, m = rep.meta;
+    const s = d.summary;
+    const period = rep.month ? monthLong(rep.month) : s.period ? `${dateRo(s.period.from)} – ${dateRo(s.period.to)}` : "toată perioada din fișier";
+    const today = new Date();
+    const section = (title, ...kids) => el("section", { class: "report-section" }, [el("h2", { text: title }), ...kids]);
+    body.replaceChildren();
+
+    body.append(el("header", { class: "report-head" }, [
+      el("p", { class: "report-kicker", text: "Raport de vânzări" }),
+      el("h1", { text: m.filename }),
+      el("p", { class: "report-meta", text: `Perioada: ${period} · Sume în ${curLabel(cur)} · Generat pe ${dateRo(today.toISOString().slice(0, 10))} cu Claritate` }),
+    ]));
+
+    // 1. cifre cheie + grafic pe luni
+    const del = curRow(d.delivered.byCurrency, cur);
+    const lost = d.lost.available ? curRow(d.lost.byCurrency, cur) : null;
+    const sc = curRow(s.currencies, cur);
+    const k = el("div", { class: "kpis" });
+    k.append(kpi(d.delivered.assumedAll ? `Venit (${curLabel(cur)})` : `Venit livrat (${curLabel(cur)})`, del ? nf2.format(del.total) : "—", del ? cur : null, del ? `${nf0.format(del.count)} comenzi livrate` : null, { hero: true }));
+    k.append(kpi("Comenzi valide", nf0.format(s.orders), null, s.currencies.map((x) => `${nf0.format(x.count)} în ${curLabel(x.currency)}`).join(" · ")));
+    if (sc) k.append(kpi("Valoare medie pe comandă", nf2.format(sc.avg), cur, `mediana: ${money(sc.median, cur)}`));
+    if (lost) k.append(kpi(`Venit pierdut (${curLabel(cur)})`, nf2.format(lost.lost), cur, `retur ${money(lost.retur, cur)} · anulat ${money(lost.anulata, cur)}`));
+    const kids = [k];
+    if (d.delivered.monthly && !rep.month) {
+      const vals = d.delivered.monthly.series[cur] || [];
+      const pts = d.delivered.monthly.months.map((mm, i) => ({ label: monthShort(mm), full: monthLong(mm), value: vals[i] || 0 }));
+      kids.push(el("h3", { text: `Venit livrat pe lună (${curLabel(cur)})` }), line(pts, cur, { aria: `Venit livrat pe luni în ${curLabel(cur)}` }));
+      if (d.months.incompleteMonth) kids.push(el("p", { class: "note-line", text: `${monthLong(d.months.incompleteMonth)} e lună incompletă: datele se opresc pe ${dateRo(d.months.lastDate)}.` }));
+    }
+    body.append(section("Cifre cheie", ...kids));
+
+    // 2. top clienți și produse
+    const tops = [];
+    const topList = (title, items) => el("div", { class: "report-col" }, [el("h3", { text: `Top după „${title}”` }), items.length ? hbars(items, cur, { share: true }) : emptyState("Fără date în această monedă.")]);
+    if (d.top.customers) tops.push(topList(d.top.customerColumn, d.top.customers[cur] || []));
+    if (d.top.products) tops.push(topList(d.top.productColumn, d.top.products[cur] || []));
+    if (tops.length) body.append(section(d.top.basis === "livrat" ? "Top clienți și produse (după venit livrat)" : "Top clienți și produse", el("div", { class: "grid-2" }, tops)));
+
+    // 3. pivotul ales
+    if (pivot) {
+      const sub = `${pivot.rowLabel}${pivot.colLabel ? ` × ${pivot.colLabel}` : ""} · ${pivot.measureLabel}${pivot.currency !== null ? ` (${curLabel(pivot.currency)})` : ""}`;
+      body.append(section("Tabel pivot", el("p", { class: "sub", text: sub }), pivot.rows.length ? pivotTable(pivot) : emptyState("Nu există comenzi pentru acest pivot."), ...pivot.notes.map((n) => el("p", { class: "note-line", text: n }))));
+    }
+
+    // 4. venit pierdut + curățare
+    const lostKids = [];
+    if (lost) {
+      lostKids.push(el("p", {}, `Retur + anulare: ${money(lost.lost, cur)} (${pf.format(lost.share)} din valoarea tuturor comenzilor în ${curLabel(cur)}) · ${nf0.format(d.lost.counts.retur)} comenzi returnate, ${nf0.format(d.lost.counts.anulata)} anulate.`));
+      const tc = (d.lost.topCustomers && d.lost.topCustomers[cur]) || [];
+      if (tc.length) lostKids.push(el("h3", { text: `Cele mai mari pierderi pe „${m.customerColumn || "client"}”` }), hbars(tc.slice(0, 5).map((t) => ({ name: t.name, value: t.value })), cur, { color: "var(--st-anulata)" }));
+    } else lostKids.push(el("p", { text: "Fișierul nu are o coloană de status, deci venitul pierdut nu se poate separa." }));
+    const r = rep.report;
+    const cleaned = [
+      `${nf0.format(r.kept)} rânduri păstrate din ${nf0.format(r.linesAfterHeader)}`,
+      r.empty ? `${nf0.format(r.empty)} goale` : null,
+      r.totals ? `${nf0.format(r.totals)} rânduri de total` : null,
+      r.duplicates ? `${nf0.format(r.duplicates)} duplicate` : null,
+      r.repairedNumbers ? `${nf0.format(r.repairedNumbers)} numere reparate` : null,
+      r.invalidDates ? `${nf0.format(r.invalidDates)} date invalide` : null,
+    ].filter(Boolean);
+    lostKids.push(el("h3", { text: "Ce s-a curățat din fișier" }), el("p", { text: cleaned.join(" · ") + "." }));
+    if (rep.month) lostKids.push(el("p", { class: "note-line", text: "Curățarea se referă la tot fișierul, nu doar la luna aleasă." }));
+    body.append(section("Venit pierdut și curățarea datelor", ...lostKids));
+    body.append(el("p", { class: "report-foot", text: "Toate cifrele sunt calculate de cod, după reguli fixe (fără AI). Monedele nu sunt convertite între ele." }));
+  }
+
   // ------------------------------------------------------------------ întrebări
   function renderSuggestions() {
     $("#suggestions").replaceChildren(...state.analysis.suggestions.map((q) => el("button", {
@@ -722,6 +911,11 @@
   $("#newFile").addEventListener("click", resetToStart);
   $("#newFileTop").addEventListener("click", resetToStart);
   $("#askForm").addEventListener("submit", (e) => { e.preventDefault(); const q = $("#question").value.trim(); if (q) ask(q); });
+  $("#openReport").addEventListener("click", () => openReport());
+  $("#reportClose").addEventListener("click", closeReport);
+  $("#reportPrint").addEventListener("click", () => window.print());
+  $("#reportMonth").addEventListener("change", (e) => openReport(e.target.value));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#report").hidden) closeReport(); });
   $("#copyLink").addEventListener("click", async () => {
     const url = `${location.origin}/d/${state.id}`;
     const label = $("#copyLink span");
