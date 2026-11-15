@@ -566,7 +566,15 @@ function compute(metric: Metric, xs: number[]): number {
 }
 
 export interface AnswerRow { group: string; currency: string; value: number; count: number }
-export interface Answer { text: string; rows: AnswerRow[]; planText: string; matched: number }
+/** Răspunsul pe secțiuni, ca să fie afișat schematic (titlu + puncte), nu ca paragraf. */
+export interface AnswerSection { title: string; items: string[] }
+export interface Answer { text: string; sections: AnswerSection[]; notes: string[]; rows: AnswerRow[]; planText: string; matched: number }
+
+/** Varianta text (pentru loguri, teste și clienți vechi): secțiunile lipite într-un paragraf. */
+function flatten(sections: AnswerSection[], notes: string[]): string {
+  const parts = sections.map((sec) => sec.items.length ? `${sec.title}: ${sec.items.join(" · ")}.` : `${sec.title}.`);
+  return [...parts, ...notes.map((n) => n.endsWith(".") ? n : n + ".")].join(" ");
+}
 
 const fmtNum = (n: number, digits = 2) => new Intl.NumberFormat("ro-RO", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
 const fmtPct = (n: number) => `${new Intl.NumberFormat("ro-RO", { maximumFractionDigits: 1 }).format(n)}%`;
@@ -596,7 +604,6 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
   const rows = records.filter((r) => plan.filters.every((f) => passes(r, f)));
   const planText = describePlan(plan, labels);
   const digits = plan.field === "cantitate" ? 0 : 2;
-  const extra: string[] = [];
 
   // ---- procent („rata de retur”)
   if (plan.metric === "share") {
@@ -609,8 +616,7 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
     const part = base.filter((r) => plan.filters.filter((f) => numCols.includes(f.column)).every((f) => passes(r, f)));
     const inPart = new Set(part);
     const pct = base.length ? (part.length / base.length) * 100 : 0;
-    const out: AnswerRow[] = [{ group: "Din numărul de comenzi", currency: "", value: round2(pct), count: part.length }];
-    let text = `${fmtPct(pct)} din comenzi (${part.length} din ${base.length}).`;
+    const items = [`${fmtPct(pct)} din comenzi (${part.length} din ${base.length})`];
     if (plan.field) {
       const sums = new Map<string, [number, number]>();
       for (const r of base) {
@@ -618,12 +624,13 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
         const e = sums.get(r.currency) ?? [0, 0]; e[1] += x; if (inPart.has(r)) e[0] += x; sums.set(r.currency, e);
       }
       const parts = [...sums.entries()].filter(([, [, t]]) => t > 0).map(([c, [p, t]]) => {
-        out.push({ group: "Din valoare", currency: c, value: round2((p / t) * 100), count: part.filter((r) => r.currency === c).length });
-        return `${c ? c + " " : ""}${fmtNum(round2(p))} din ${fmtNum(round2(t))} (${fmtPct((p / t) * 100)})`;
+        return `${fmtPct((p / t) * 100)} din valoare: ${c ? c + " " : ""}${fmtNum(round2(p))} din ${fmtNum(round2(t))}`;
       });
-      if (parts.length) text += ` Ca valoare: ${parts.join(" · ")}.`;
+      items.push(...parts);
     }
-    return { text, rows: out, planText, matched: part.length };
+    const sections = [{ title: "Procent", items }];
+    // fără tabel: ar repeta exact cifrele de mai sus
+    return { text: flatten(sections, []), sections, notes: [], rows: [], planText, matched: part.length };
   }
 
   // ---- valori distincte („câți clienți”)
@@ -631,11 +638,11 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
     const counts = new Map<string, number>();
     for (const r of rows) { const v = String(fieldValue(r, plan.field) ?? ""); if (v) counts.set(v, (counts.get(v) ?? 0) + 1); }
     const list = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ro"));
-    const shown = list.slice(0, 8).map(([v]) => v).join(", ");
-    const text = list.length
-      ? `${list.length} valori distincte în „${fieldLabel}”: ${shown}${list.length > 8 ? ` și încă ${list.length - 8} în tabel` : ""}.`
-      : "Niciun rând nu corespunde filtrelor alese.";
-    return { text, rows: list.map(([group, n]) => ({ group, currency: "", value: n, count: n })), planText, matched: rows.length };
+    const sections = [list.length
+      ? { title: `${list.length} valori distincte în „${fieldLabel}”`, items: [] as string[] }
+      : { title: "Niciun rând nu corespunde filtrelor alese", items: [] as string[] }];
+    const notes = list.length ? ["Lista completă, cu numărul de comenzi pentru fiecare, e în tabel."] : [];
+    return { text: flatten(sections, notes), sections, notes, rows: list.map(([group, n]) => ({ group, currency: "", value: n, count: n })), planText, matched: rows.length };
   }
 
   const money = plan.field === "valoare" || plan.field === "pret";
@@ -687,51 +694,58 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
     : `${r.currency ? r.currency + " " : ""}${fmtNum(r.value, digits)}`;
   const label = (g: string) => plan.groupBy === "luna" && /^\d{4}-\d{2}$/.test(g) ? monthName(g) : g;
 
-  // pentru metrici altele decât „count”, spunem direct pe câte comenzi s-a calculat
-  // fiecare cifră (altfel numărul ăsta apare DOAR în coloana „Comenzi folosite” din tabel).
-  const withCount = (r: AnswerRow) => plan.metric === "count" ? show(r) : `${show(r)} (${comenzi(r.count)})`;
   const delivered = statusFilter && statusFilter.op === "eq" && statusFilter.value === DELIVERED;
   const scope = delivered ? ", doar comenzi livrate" : "";
 
-  let text: string;
-  if (rows.length === 0) text = "Niciun rând nu corespunde filtrelor alese, deci rezultatul e 0.";
+  const sections: AnswerSection[] = [];
+  const notes: string[] = [];
+  // „— 4 comenzi” după fiecare sumă, ca să fie clar pe câte comenzi s-a calculat
+  const item = (r: AnswerRow, name?: string) => {
+    const head = name ? `${name}: ` : "";
+    return plan.metric === "count" || (!plan.groupBy && (plan.metric === "max" || plan.metric === "min")) ? `${head}${show(r)}` : `${head}${show(r)} — ${comenzi(r.count)}`;
+  };
+  const metricTitle = !plan.groupBy && plan.metric === "max" ? "cea mai mare comandă" : !plan.groupBy && plan.metric === "min" ? "cea mai mică comandă" : METRIC_RO[plan.metric];
+  const title = `${capitalize(metricTitle)}${fieldLabel && plan.metric !== "count" ? ` (${fieldLabel})` : ""}${scope}`;
+  if (rows.length === 0) sections.push({ title: "Niciun rând nu corespunde filtrelor alese, deci rezultatul e 0", items: [] });
   else if (!plan.groupBy) {
-    text = `${capitalize(METRIC_RO[plan.metric])}${fieldLabel && plan.metric !== "count" ? ` (${fieldLabel})` : ""}${scope}: ${out.map(withCount).join(" · ")}.`;
+    sections.push({ title, items: out.map((r) => item(r)) });
     // „cea mai mare comandă”: spunem și care e
     if ((plan.metric === "max" || plan.metric === "min") && plan.field) {
       const who = out.map((o) => {
         const r = rows.find((x) => x.currency === o.currency && fieldValue(x, plan.field!) === o.value);
         if (!r) return "";
         const bits = [r.id, ...Object.values(r.cats).slice(0, 2), r.date ? fmtDate(r.date) : "", r.status ?? ""].filter(Boolean);
-        return bits.length ? `${o.currency ? o.currency + ": " : ""}${bits.join(", ")}` : "";
+        return bits.length ? `${o.currency && out.length > 1 ? o.currency + ": " : ""}${bits.join(", ")}` : "";
       }).filter(Boolean);
-      if (who.length) extra.push(`Comanda: ${who.join(" · ")}.`);
+      if (who.length) sections.push({ title: "Comanda", items: who });
     }
   } else {
-    // o propoziție scurtă pe fiecare monedă; lista completă e în tabel
+    // o secțiune pe fiecare monedă; lista completă e în tabel
     const byCur = new Map<string, AnswerRow[]>();
     for (const c of curOrder) byCur.set(c, out.filter((r) => r.currency === c));
     const multi = byCur.size > 1;
-    const parts = [...byCur.entries()].map(([cur, rs]) => {
-      const pre = multi && cur ? `În ${cur}: ` : "";
-      if (plan.limit === 1) {
-        // cel mai / cea mai: egalitățile rămân împreună
-        return `${pre}${rs.map((r) => label(r.group)).join(" și ")}: ${show(rs[0])}${rs.length > 1 ? " fiecare" : ""}${plan.metric === "count" ? "" : ` (${comenzi(rs[0].count)}${rs.length > 1 ? " fiecare" : ""})`}`;
-      }
-      const shown = rs.slice(0, 5).map((r, k) => `${chrono ? "" : `${k + 1}. `}${label(r.group)} (${show(r)})`).join(", ");
-      return `${pre}${shown}${rs.length > 5 ? ` și încă ${rs.length - 5} în tabel` : ""}`;
-    });
-    text = `${delivered ? "Doar comenzi livrate. " : ""}${parts.join(". ")}.`;
-    if (multi) text += " Fiecare monedă e calculată separat, fără conversie.";
+    const base = title;
+    for (const [cur, rs] of byCur) {
+      const t = multi && cur ? `${base} — ${cur}` : base;
+      const shown = rs.slice(0, plan.limit === 1 ? rs.length : 5).map((r, k) => item(r, `${chrono || plan.limit === 1 ? "" : `${k + 1}. `}${label(r.group)}`));
+      if (rs.length > 5 && plan.limit !== 1) shown.push(`…și încă ${rs.length - 5} în tabel`);
+      sections.push({ title: t, items: shown });
+    }
+    if (multi) notes.push("Fiecare monedă e calculată separat, fără conversie");
     // „martie față de februarie”
     if (plan.compare) {
+      const diffs: string[] = [];
       for (const [cur, rs] of byCur) {
         if (rs.length !== 2) continue;
         const [a, b] = [...rs].sort((x, y) => x.group.localeCompare(y.group));
         const diff = b.value - a.value;
         const pct = a.value ? ` (${diff >= 0 ? "+" : ""}${fmtPct((diff / a.value) * 100)})` : "";
         const amount = plan.metric === "count" ? `${diff >= 0 ? "+" : ""}${fmtNum(diff, 0)} comenzi` : `${diff >= 0 ? "+" : "−"}${cur ? cur + " " : ""}${fmtNum(Math.abs(diff), digits)}`;
-        extra.push(`${capitalize(label(b.group))} față de ${label(a.group)}: ${amount}${pct}.`);
+        diffs.push(`${amount}${pct}`);
+      }
+      if (diffs.length) {
+        const ms = [...new Set(out.map((r) => r.group))].sort();
+        sections.push({ title: `${capitalize(label(ms[ms.length - 1]))} față de ${label(ms[0])}`, items: diffs });
       }
     }
   }
@@ -746,14 +760,14 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
     for (const r of pool) { const s = r.status ?? "(fără status)"; byStatus.set(s, [...(byStatus.get(s) ?? []), r]); }
     const order = [...byStatus.keys()].sort((a, b) => (STATUS_ORDER.indexOf(a) + 1 || 99) - (STATUS_ORDER.indexOf(b) + 1 || 99));
     const shownStatuses = delivered ? order.filter((s) => s !== DELIVERED) : order;
-    const item = (s: string) => {
+    const statusItem = (s: string) => {
       const rs = byStatus.get(s)!;
-      const amount = plan.metric !== "count" && plan.field ? `${moneyByCurrency(rs, plan.field, digits, allCur)} ` : "";
-      return `${s} ${amount}(${comenzi(rs.length)})`.replace(/\s+/g, " ");
+      const amount = plan.metric !== "count" && plan.field ? moneyByCurrency(rs, plan.field, digits, allCur) : "";
+      return amount ? `${s}: ${amount} — ${comenzi(rs.length)}` : `${s}: ${comenzi(rs.length)}`;
     };
     if (shownStatuses.length && (delivered || order.length > 1) && plan.groupBy !== "status") {
-      const head = delivered ? (plan.groupBy ? "Separat, în aceleași filtre" : "Separat, nelivrate") : "Pe status";
-      extra.push(`${head}: ${shownStatuses.map(item).join(" · ")}.`);
+      const head = delivered ? (plan.groupBy ? "Nelivrate, separat (aceleași filtre, toate grupele)" : "Nelivrate, separat") : "Pe status";
+      sections.push({ title: head, items: shownStatuses.map(statusItem) });
     }
   }
 
@@ -765,12 +779,11 @@ export function execute(plan: Plan, records: CleanRecord[], labels: Record<strin
     const endDay = new Date(Date.UTC(y, mo, 0)).getUTCDate();
     const touched = plan.filters.some((f) => f.column === "luna" && (Array.isArray(f.value) ? f.value.includes(lastMonth) : f.value === lastMonth))
       || (plan.groupBy === "luna" && out.some((r) => r.group === lastMonth));
-    if (touched && Number(lastDate.slice(8, 10)) < endDay) extra.push(`Atenție: ${monthName(lastMonth)} e lună incompletă — datele se opresc la ${fmtDate(lastDate)}.`);
+    if (touched && Number(lastDate.slice(8, 10)) < endDay) notes.push(`Atenție: ${monthName(lastMonth)} e lună incompletă — datele se opresc la ${fmtDate(lastDate)}.`);
   }
 
-  if (plan.notes?.length) extra.push(`Am înțeles: ${plan.notes.join("; ")}.`);
-  if (extra.length) text += " " + extra.join(" ");
-  return { text, rows: out.map((r) => ({ ...r, group: label(r.group) })), planText, matched: rows.length };
+  if (plan.notes?.length) notes.push(`Am înțeles: ${plan.notes.join("; ")}`);
+  return { text: flatten(sections, notes), sections, notes, rows: out.map((r) => ({ ...r, group: label(r.group) })), planText, matched: rows.length };
 }
 
 export function describePlan(p: Plan, labels: Record<string, string> = {}): string {

@@ -334,6 +334,12 @@ table.data tbody tr:nth-child(even) td { background: #FBFCFE; }
 .chip:hover { background: var(--primary-100); }
 .answer { margin-top: 16px; }
 .answer-text { font-size: 1.05rem; font-weight: 600; margin: 0; }
+.answer-body { display: grid; gap: 6px; }
+.answer-title { font-size: 1rem; font-weight: 700; margin: 6px 0 0; color: var(--text); }
+.answer-body > .answer-title:first-child { margin-top: 0; }
+.answer-list { margin: 0; padding-left: 1.25em; display: grid; gap: 2px; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.answer-list li::marker { color: var(--text-muted); }
+.answer-notes { margin: 4px 0 0; padding-left: 1.25em; font-size: .86rem; color: var(--text-muted); display: grid; gap: 2px; }
 .answer-plan { margin: 8px 0 0; font-size: .84rem; color: var(--text-muted); }
 .answer-plan code { font-family: inherit; background: var(--surface-2); padding: 2px 6px; border-radius: 6px; color: var(--text-2); }
 

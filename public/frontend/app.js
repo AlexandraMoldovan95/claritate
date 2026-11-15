@@ -648,12 +648,24 @@
         return;
       }
       const a = res.answer;
-      out.append(el("p", { class: "answer-text", text: a.text }));
+      // răspunsul schematic: titlu + puncte pe fiecare secțiune, apoi notele mărunte
+      if (Array.isArray(a.sections) && a.sections.length) {
+        const box = el("div", { class: "answer-body" });
+        for (const sec of a.sections) {
+          box.append(el("p", { class: "answer-title", text: sec.title }));
+          if (sec.items.length) box.append(el("ul", { class: "answer-list" }, sec.items.map((t) => el("li", { text: t }))));
+        }
+        if (a.notes && a.notes.length) box.append(el("ul", { class: "answer-notes" }, a.notes.map((t) => el("li", { text: t }))));
+        out.append(box);
+      } else {
+        out.append(el("p", { class: "answer-text", text: a.text }));
+      }
       out.append(el("p", { class: "answer-plan" }, [
         "Am calculat: ", el("code", { text: a.planText }), ` · ${nf0.format(a.matched)} rânduri folosite · plan ales de `,
         el("span", { class: `pill ${res.source === "model" ? "info" : "good"}`, text: res.source === "model" ? "model AI" : "reguli" }),
       ]));
-      if (a.rows.length > 1 || (a.rows.length === 1 && a.rows[0].group !== "Total")) {
+      // tabelul doar când adaugă ceva: grupe (clienți, luni…), nu când repetă totalul de mai sus
+      if (a.rows.some((r) => r.group !== "Total")) {
         const isCount = res.plan && (res.plan.metric === "count" || res.plan.metric === "distinct");
         // Pentru "count", coloana cu numărul de comenzi folosite ar fi identică cu
         // rezultatul în sine, deci e omisă. Pentru restul, e numărul de comenzi care au
