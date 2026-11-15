@@ -588,7 +588,9 @@ const fmtNum = (n: number, digits = 2) => new Intl.NumberFormat("ro-RO", { minim
 const fmtPct = (n: number) => `${new Intl.NumberFormat("ro-RO", { maximumFractionDigits: 1 }).format(n)}%`;
 const METRIC_RO: Record<Metric, string> = { sum: "suma", count: "numărul de comenzi", avg: "media", median: "mediana", min: "minimul", max: "maximul", distinct: "numărul de valori distincte", share: "procentul" };
 const STATUS_ORDER = [DELIVERED, "În curs", "Retur", "Anulată"];
-const comenzi = (n: number) => `${fmtNum(n, 0)} ${n === 1 ? "comandă" : "comenzi"}`;
+// în română: „1 comandă”, „5 comenzi”, dar „20 de comenzi”, „1.000 de comenzi” (ultimele două cifre 0 sau ≥ 20)
+const deFor = (n: number) => { const r = Math.abs(Math.trunc(n)) % 100; return n !== 0 && Number.isInteger(n) && (r === 0 || r >= 20) ? "de " : ""; };
+const comenzi = (n: number) => `${fmtNum(n, 0)} ${n === 1 ? "comandă" : `${deFor(n)}comenzi`}`;
 const fmtDate = (d: string) => `${d.slice(8, 10)}.${d.slice(5, 7)}.${d.slice(0, 4)}`;
 
 /** Sume pe monedă pentru un set de rânduri: „RON 1.234,00 · EUR 56,00” */

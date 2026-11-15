@@ -679,7 +679,8 @@
       // comenzile din spatele răspunsului, cu coloanele fișierului urcat, valorile exact ca în fișier
       if (a.detail && a.detail.total > 0) {
         const d = a.detail;
-        const label = `Vezi ${d.total === 1 ? "comanda folosită" : `cele ${nf0.format(d.total)} comenzi folosite`}`;
+        const de = (n) => { const r = n % 100; return r === 0 || r >= 20 ? "de " : ""; }; // „31 de comenzi”, „5 comenzi”
+        const label = `Vezi ${d.total === 1 ? "comanda folosită" : `cele ${nf0.format(d.total)} ${de(d.total)}comenzi folosite`}`;
         const body = [tableView(d.columns, d.rows, [0])];
         const foot = el("div", { class: "detail-foot" });
         if (d.total > d.rows.length) foot.append(el("span", { text: `Afișez primele ${nf0.format(d.rows.length)} din ${nf0.format(d.total)}.` }));
