@@ -68,3 +68,16 @@ Codul e pregătit pentru un model care ar alege **doar planul** (ce se calculeaz
 - `scripts/smoke-test-node-handler.ts` — simulează exact invocarea Vercel (`http.createServer` + `getRequestListener`), nu doar `app.fetch()` direct.
 - `scripts/validate-shapes.ts`, `validate-xlsx.ts`, `validate-upload-xlsx.ts` — formă liberă de fișier (CSV și Excel) + un `.xlsx` real.
 - **Verificat live, direct în browser, pe `claritate.vercel.app`**: upload CSV și Excel reale, 6 dashboard-uri, întrebare, link `/d/:id` deschis într-un tab nou (simulează un vizitator anonim) — toate corecte.
+
+
+## Ce s-a adăugat după migrare (15 nov. 2026)
+
+Toate rutele noi respectă aceeași regulă: **un singur segment sub `/api/...`, id-urile în query string**.
+
+- `POST /api/ask?id=…&format=csv` — comenzile din spatele unui răspuns, ca CSV.
+- `GET /api/pivot?id=…&rows=&cols=&measure=&currency=&month=` (+ `&format=csv`) — tabel pivot.
+- `GET /api/report?id=…&month=` — datele raportului (tot fișierul sau o lună).
+- `GET /api/compare?a=…&b=…&currency=` și `POST /api/compare-ask?a=…&b=…` (+ `&format=csv&side=0|1`) — comparația între două fișiere.
+- Pagina de comparație e `/c/:a/:b`, rescrisă în `vercel.json` către `/index.html` (ca `/d/:id`).
+
+Restul (Excel citit după valoarea celulei, întrebări pe reguli care refuză în loc să ghicească, dark mode) e descris în `CLAUDE.md` și `README.md`.

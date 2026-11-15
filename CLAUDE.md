@@ -121,7 +121,7 @@ Dacă numele nu spune nimic, rolul se deduce din conținut. Utilizatorul vede ro
 
 1. Trim pe fiecare celulă; `""`, `-`, `N/A` → gol.
 2. Elimină rândurile complet goale.
-3. Elimină rândurile de total: eticheta (`total`, `subtotal`, `sumar`, `grand total`, fără diacritice, orice majuscule) apare în **orice coloană de id sau categorie**, nu neapărat prima celulă din rând — poziția ei depinde de ordinea coloanelor, care diferă de la un export la altul. **(Bug reparat:** varianta veche verifica doar prima celulă nevidă; un fișier cu coloana de ID ultima nu avea rândul de total eliminat. Scos la iveală de `scripts/validate-xlsx.ts`.) Alternativ: rândul are doar sumă și restul gol.
+3. Elimină rândurile de total: eticheta (`total`, `subtotal`, `sumar`, `grand total`, fără diacritice, orice majuscule) apare în **orice coloană de id sau categorie**, nu neapărat prima celulă din rând — poziția ei depinde de ordinea coloanelor, care diferă de la un export la altul. **(Bug reparat:** varianta veche verifica doar prima celulă nevidă; un fișier cu coloana de ID ultima nu avea rândul de total eliminat. Scos la iveală de `scripts/validate-xlsx.ts`.) La fel dacă rândul **începe** cu eticheta, oricare ar fi rolul coloanei (ex. `TOTAL;;;1650.49`, eticheta în coloana de sumă) — verificarea veche, păstrată lângă cea nouă după ce testul „CSV sintetic” a arătat că fusese pierdută. Alternativ: rândul are doar sumă și restul gol.
 4. Numere: acceptă `1.234,56`, `1,234.56`, `1234.56`, `1 234,56`, cu sau fără ghilimele/monedă; decide separatorul zecimal după ultima apariție a `,`/`.` și numărul de cifre după el.
 5. Date: `dd.mm.yyyy`, `dd/mm/yyyy`, `yyyy-mm-dd`; date invalide → rândul rămâne, dar e exclus din graficele pe lună (numărat în raport).
 6. Text categoric: spații multiple → unul, apoi o **cheie de grupare** fără diacritice/lowercase; afișarea folosește forma cea mai frecventă (ex. `Solaris Energy`). La egalitate: preferă forma care nu e toată cu minuscule sau toată cu majuscule, apoi prima apariție (ex. `Muntenia Telecom` 2× vs `muntenia telecom` 2× → `Muntenia Telecom`).
@@ -222,3 +222,8 @@ Codul original a fost scris cu Claude (Cowork) în acest folder; plugin-urile au
 - [x] Suport pentru fișiere Excel (`.xlsx`/`.xlsm`/`.xls`), verificat cu un fișier real, multi-foaie, pe producție
 - [x] Detectarea coloanelor confirmată independentă de template (ordine/denumire/nr. de coloane) cu teste automate
 - [x] `README.md` + `README-VERCEL.md` (prezentare, arhitectură curentă, istoric migrare)
+- [x] Excel citit după valoarea celulei (sume și date corecte), foaia cu date aleasă automat — 15 nov. 2026
+- [x] Întrebări pe reguli: refuz în loc de total, nume parțiale, perioade, filtre numerice, procente; anulate/retururi arătate separat; răspuns pe puncte + comenzile folosite (coloanele fișierului, CSV) — verificat cu ~80 de întrebări față de cifre calculate independent
+- [x] Spus explicit peste tot (pagină, README, sub fiecare răspuns) că răspunsurile vin din cod, fără AI; modul AI doar pregătit, pentru viitor
+- [x] Tabel pivot, raport PDF (fișier și comparație), comparație între două fișiere cu întrebări, dark mode — verificate live pe desktop/tabletă/telefon
+- [x] Cele 10 teste originale (`tests/core_test.ts`) re-rulate: 10/10 (au prins o regresie la rândurile de total, reparată)

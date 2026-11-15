@@ -152,6 +152,11 @@ function isTotalRow(cells: string[], cols: Column[]): boolean {
   // ordinea coloanelor din fișier, care diferă de la un export la altul.
   const labelValues = [...get("id"), ...get("category")].filter((v) => v !== "");
   if (labelValues.some((v) => TOTAL_RE.test(textKey(v)))) return true;
+  // …și verificarea de dinainte, care rămâne valabilă: rândul ÎNCEPE cu „TOTAL…”, oricare ar fi rolul
+  // coloanei (ex. eticheta stă în coloana de sumă: „TOTAL;;;1650.49”). Fără ea, testul din
+  // tests/core_test.ts („CSV sintetic”) păstra rândul de total ca pe o comandă.
+  const first = cells.find((v) => v !== "");
+  if (first !== undefined && TOTAL_RE.test(textKey(first))) return true;
   // „doar sumă și restul gol”: fără ID, fără dată, fără nicio categorie, dar cu un număr
   const hasKeyInfo = [...get("id"), ...get("date"), ...get("category"), ...get("status")].some((v) => v !== "");
   const hasNumber = [...get("amount"), ...get("unit_price"), ...get("quantity")].some((v) => v !== "");

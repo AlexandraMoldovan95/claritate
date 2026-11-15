@@ -51,6 +51,10 @@ A real example, `vanzari_2026.csv`: **145 rows** under the header → **129 vali
 
 The full cleaning report is visible on the page ("**What I cleaned**" → "See the removed rows").
 
+## Light and dark theme
+
+A moon / sun button in the top bar switches themes. It follows the device setting until you pick one, remembers the choice, and the PDF report always prints on white.
+
 ## Pivot table and a ready-to-send report
 
 - **Pivot table** (7th tab): pick what goes on rows (client, product, agent, city, month, status…), on columns, and what is added up (delivered value, value across all statuses, number of orders, delivered quantity). Defaults to **Client × Month, delivered value**, with row, column and grand totals — the Excel pivot most people build on a sales export, with no formulas. Downloadable as CSV.
@@ -117,9 +121,11 @@ backend/core/normalize.ts numbers, dates, statuses, currencies
 backend/core/detect.ts    header and each column's role
 backend/core/clean.ts     cleaning + the report
 backend/core/aggregate.ts the 6 dashboards
-backend/core/ask.ts       question → plan → validation → safety net → calculation
+backend/core/ask.ts       question → plan (rules) → validation → calculation → answer + the orders used
+backend/core/pivot.ts     pivot table: rows × columns × measure, totals, CSV
+backend/core/compare.ts   two files: column matching, full outer join per shared column, questions on both
 public/                   static files Vercel serves directly: index.html, frontend/, examples/, og.jpg
-vercel.json               rewrites /d/:id → /index.html so shared dashboard links work
+vercel.json               rewrites /d/:id and /c/:a/:b → /index.html so shared dashboard and comparison links work
 scripts/smoke-test.ts              the ported backend runs under real Node + npm hono
 scripts/smoke-test-node-handler.ts simulates the exact Vercel invocation (http.createServer + getRequestListener)
 scripts/validate-shapes.ts         CSVs with reordered/renamed/missing/extra columns — no fixed template
@@ -136,7 +142,7 @@ main.ts · dev.ts · deno.json   the old Val Town/Deno entry points — kept for
 ```
 
 **Running locally (Vercel version):** no dev server wired up yet — `npm install` then `npx tsx scripts/smoke-test.ts` exercises the ported backend directly (upload, dashboard, ask, 404, 400); the `validate-*.ts` scripts exercise the template-agnostic parsing and Excel support the same way. A real local server would be `vercel dev` (Vercel CLI, after `vercel link`).
-**Tests:** `deno task test` still runs the original 10 tests against `backend/core/*` (unaffected by the migration or the Excel addition, since that code's public behavior didn't change — only a bug fix in the total-row detection, which the new scripts cover).
+**Tests:** `deno task test` runs the original 10 tests against `backend/core/*`. They were re-run on 15 Nov 2026 (under Node, with a small `Deno.test` shim, since Deno isn't installed on the dev machine): **10/10 pass**. That re-run caught a real regression — the earlier total-row fix had replaced, instead of extended, the "row starts with TOTAL" check — now fixed.
 
 ## Next steps (deliberately out of scope for now)
 
