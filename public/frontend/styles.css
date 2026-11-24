@@ -157,8 +157,20 @@ a { color: var(--primary); }
 .blob-1 { width: 520px; height: 520px; background: var(--blob-1); top: -160px; right: -120px; animation: breathe 8s ease-in-out infinite; }
 .blob-2 { width: 420px; height: 420px; background: var(--blob-2); bottom: -200px; left: -140px; animation: breathe 8s ease-in-out 2s infinite; }
 @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-.hero-grid { position: relative; z-index: 1; display: grid; gap: 40px; align-items: center; }
-@media (min-width: 1024px) { .hero-grid { grid-template-columns: 1.05fr .95fr; gap: 56px; } }
+/* Ordinea din HTML e intro → upload → listă: pe telefon (o coloană) cardul de upload vine
+   imediat după text, înaintea listei. Pe desktop, zonele de grid le pun ca înainte:
+   intro și lista în stânga, una sub alta, cardul de upload în dreapta, centrat pe ambele. */
+.hero-grid { position: relative; z-index: 1; display: grid; gap: 32px; align-items: center; }
+.hero-intro > .lead { margin-bottom: 0; }
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1.05fr .95fr; column-gap: 56px; row-gap: 24px;
+    grid-template-areas: "intro upload" "features upload";
+  }
+  .hero-intro { grid-area: intro; align-self: end; }
+  .hero-grid > .features { grid-area: features; align-self: start; }
+  .upload-wrap { grid-area: upload; }
+}
 .eyebrow {
   display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
   background: var(--surface); border: 1px solid var(--primary-100); color: var(--primary-700);
