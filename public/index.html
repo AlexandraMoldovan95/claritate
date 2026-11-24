@@ -6,15 +6,7 @@
 <title>Claritate — dashboard din orice CSV sau Excel</title>
 <meta name="description" content="Urcă un CSV sau Excel cu vânzări și primești automat datele curățate, 6 dashboard-uri și răspunsuri la întrebări în română.">
 <meta name="theme-color" content="#4F46E5">
-<script>
-  // Tema se aplică înainte de prima afișare (fără „clipire” albă): alegerea salvată, altfel setarea dispozitivului.
-  (function () {
-    var t = null;
-    try { t = localStorage.getItem("claritate-theme"); } catch (e) {}
-    if (t !== "dark" && t !== "light") t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", t);
-  })();
-</script>
+<script src="/frontend/theme.js"></script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Claritate">
 <meta property="og:locale" content="ro_RO">
@@ -153,12 +145,12 @@
 
       <div class="understand">
         <details class="card fold" id="structureCard">
-          <summary><div><h2>Ce am înțeles din fișier</h2><p class="sub" id="structureSub" style="margin:0"></p></div>
+          <summary><div><h2>Ce am înțeles din fișier</h2><p class="sub flush" id="structureSub"></p></div>
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
           <div id="structure"></div>
         </details>
         <details class="card fold" id="cleanCard" open>
-          <summary><div><h2>Ce am curățat</h2><p class="sub" id="cleanSub" style="margin:0"></p></div>
+          <summary><div><h2>Ce am curățat</h2><p class="sub flush" id="cleanSub"></p></div>
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
           <div id="cleaning"></div>
         </details>
@@ -175,7 +167,7 @@
 
       <section class="card ask" aria-labelledby="askTitle">
         <h2 id="askTitle">Întreabă ceva despre date</h2>
-        <p class="sub" style="margin:0">Scrie în română. Întrebarea e interpretată după reguli fixe (fără AI), iar cifrele le calculează codul. Sub răspuns vezi exact ce s-a calculat și din ce comenzi.</p>
+        <p class="sub flush">Scrie în română. Întrebarea e interpretată după reguli fixe (fără AI), iar cifrele le calculează codul. Sub răspuns vezi exact ce s-a calculat și din ce comenzi.</p>
         <form class="ask-form" id="askForm">
           <label for="question" class="visually-hidden">Întrebare</label>
           <input id="question" name="question" type="text" maxlength="300" autocomplete="off" placeholder="ex. Cât am livrat în iunie către Solaris Energy?">

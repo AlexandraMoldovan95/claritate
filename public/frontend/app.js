@@ -16,7 +16,8 @@
       else if (k === "text") node.textContent = v;
       else if (k === "html") node.innerHTML = v; // folosit DOAR cu SVG-uri statice din acest fișier
       else if (k.startsWith("on")) node.addEventListener(k.slice(2), v);
-      else if (k === "style") node.setAttribute("style", v);
+      // prin CSSOM, nu setAttribute("style"): CSP-ul (style-src 'self') blochează atributele style, nu și CSSOM
+      else if (k === "style") node.style.cssText = v;
       else node.setAttribute(k, v === true ? "" : String(v));
     }
     for (const c of [].concat(children)) {
