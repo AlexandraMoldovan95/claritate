@@ -140,7 +140,7 @@ deno.json                 `deno task test` (the 10 original tests)
 ```
 
 **Running locally (Vercel version):** no dev server wired up yet — `npm install` then `npx tsx scripts/smoke-test.ts` exercises the ported backend directly (upload, dashboard, ask, 404, 400); the `validate-*.ts` scripts exercise the template-agnostic parsing and Excel support the same way. A real local server would be `vercel dev` (Vercel CLI, after `vercel link`).
-**Tests:** `deno task test` runs the original 10 tests against `backend/core/*`. They were re-run on 15 Nov 2026 (under Node, with a small `Deno.test` shim, since Deno isn't installed on the dev machine): **10/10 pass**. That re-run caught a real regression — the earlier total-row fix had replaced, instead of extended, the "row starts with TOTAL" check — now fixed.
+**Tests:** `deno task test` runs the original 10 tests against `backend/core/*`. They were re-run on 15 Nov 2026 (under Node, with a small `Deno.test` shim, since Deno isn't installed on the dev machine): **10/10 pass**. That re-run caught a real regression — the earlier total-row fix had replaced, instead of extended, the "row starts with TOTAL" check — now fixed. Since 25 Nov 2026 they also run in CI on every push (`.github/workflows/tests.yml`: `npm ci`, then `deno test`).
 
 ## Next steps (deliberately out of scope for now)
 

@@ -60,7 +60,7 @@ scripts/smoke-test-node-handler.ts simulează exact invocarea Vercel (http.creat
 scripts/validate-shapes.ts         CSV-uri cu coloane în altă ordine/denumire/mai puține sau mai multe — fără model fix
 scripts/validate-xlsx.ts           un .xlsx real (nu CSV redenumit), cu mai multe foi, date/numere native Excel
 scripts/validate-upload-xlsx.ts    /api/upload cu .xlsx prin multipart, inclusiv fișier fără extensia corectă în nume
-tests/core_test.ts          8 teste Deno (istoric, Val Town): cifrele de referință, CSV sintetic neconform, plan invalid
+tests/core_test.ts          10 teste Deno: cifrele de referință, CSV sintetic neconform, plan invalid (rulate în CI la fiecare push: .github/workflows/tests.yml)
 PLAN.md · CLAUDE.md · DESIGN.md · docs/ · README.md · README-VERCEL.md
 
 legacy/                     varianta originală Val Town/Deno (frontend/, examples/, main.ts, dev.ts) — doar istoric, nu mai rulează;
