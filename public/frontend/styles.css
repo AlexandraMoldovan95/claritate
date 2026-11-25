@@ -520,6 +520,22 @@ body.report-open { overflow: hidden; }
 
 /* ---------------------------------------------------------------- comutatorul de temă */
 .topbar-actions { display: flex; align-items: center; gap: 8px; }
+/* Drumul înapoi spre portofoliul autoarei: link text, ținta de atingere de 44px ca restul barei. */
+.portfolio-link { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 0 6px; font-weight: 600; font-size: .9rem; color: var(--text-2); text-decoration: none; white-space: nowrap; }
+.portfolio-link:hover { color: var(--primary); text-decoration: underline; }
+.portfolio-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 8px; }
+/* Pe telefon, cu „Fișier nou” vizibil, bara nu încăpea (434px pe un ecran de 390; deja
+   peste 320 înainte de link): fără subtitlul de sub logo, iar „Portofoliu” și „Fișier nou”
+   rămân doar ca iconițe (textul rămâne pentru cititoarele de ecran). Pe pagina de start,
+   bara rămâne neschimbată. */
+@media (max-width: 480px) {
+  .topbar:has(#newFileTop:not([hidden])) .brand small { display: none; }
+  .topbar:has(#newFileTop:not([hidden])) .topbar-label {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .topbar:has(#newFileTop:not([hidden])) .portfolio-link { min-width: 44px; justify-content: center; }
+}
 .theme-toggle { min-width: 44px; padding: 0 12px; }
 .theme-toggle .icon-sun { display: none; }
 [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
