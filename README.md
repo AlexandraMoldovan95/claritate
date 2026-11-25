@@ -154,5 +154,5 @@ deno.json                 `deno task test` (the 10 original tests)
 - Excel files: only the **sheet with the most data** is read (a cover or summary sheet placed first is skipped automatically); other sheets are ignored.
 - Currencies are **not converted**: each keeps its own figures.
 - Anyone with a dashboard's link can view it (there's no login), so the page explicitly says **not to upload confidential data**.
-- Answers come from a **rule-based planner** (code, no AI): it understands the phrasings it was written for (~80 question types tested) and refuses clearly when it doesn't understand, but free-form questions outside those patterns get a refusal rather than an answer.
+- Answers come from a **rule-based planner** (code, no AI): it understands the phrasings it was written for (about 80 questions tried by hand during development, on realistic spreadsheets and the demo files, answers checked against figures calculated separately; the automated suite covers the core with 10 tests) and refuses clearly when it doesn't understand, but free-form questions outside those patterns get a refusal rather than an answer.
 - Upstash Redis entries expire after **90 days** — an uploaded/shared dashboard older than that will 404. The 5 built-in examples are unaffected (they're static files, not stored in Redis).

@@ -12,12 +12,14 @@
   --secondary: #7C3AED;
   --text: #0F172A;
   --text-2: #334155;
-  --text-muted: #64748B;
-  --border: #E2E8F0;
+  --text-muted: #5B6A7F;         /* ≥ 4,9:1 și pe fundalurile colorate (#F1F5F9, #EEF2FF) */
+  --border: #E2E8F0;             /* carduri și separatoare: doar decor */
+  --border-control: #7C8BA1;     /* câmpuri, liste, taburi: ≥ 3,1:1 față de pagină și card (WCAG 1.4.11) */
   --border-soft: #F1F5F9;
   --success-text: #047857;
   --danger-text: #BE123C;
   --gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  --gradient-text: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);   /* titlul cu gradient */
   --shadow: 0 4px 20px -2px rgba(79, 70, 229, .10);
   --shadow-hover: 0 10px 25px -5px rgba(79, 70, 229, .15), 0 8px 10px -6px rgba(79, 70, 229, .10);
   --shadow-btn: 0 4px 14px 0 rgba(79, 70, 229, .30);
@@ -63,7 +65,9 @@
   --text-2: #CBD5E1;
   --text-muted: #94A3B8;
   --border: #2A3650;
+  --border-control: #64748B;     /* ≥ 3,1:1 pe #0B1220, #131C2E și #1C2740 */
   --border-soft: #1F2A40;
+  --gradient-text: linear-gradient(135deg, #818CF8 0%, #A78BFA 100%);   /* ≥ 6,2:1 pe #0B1220 (cel din tema deschisă pornea de la 2,98:1 aici) */
   --success-text: #34D399;
   --danger-text: #FB7185;
   --shadow: 0 4px 20px -2px rgba(0, 0, 0, .45);
@@ -178,7 +182,7 @@ a { color: var(--primary); }
 }
 .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 12px rgba(79, 70, 229, .6); }
 h1 { font-size: clamp(2rem, 5vw + .5rem, 3.6rem); line-height: 1.08; letter-spacing: -.03em; font-weight: 800; margin: 18px 0 16px; }
-.grad { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.grad { background: var(--gradient-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
 /* un cuvânt cu cratimă („dashboard-ul”) rămâne întreg: browserul nu mai rupe rândul după cratimă */
 .nowrap { white-space: nowrap; }
 .lead { font-size: 1.1rem; color: var(--text-2); max-width: 36rem; margin: 0 0 24px; }
@@ -269,7 +273,7 @@ details.fold > summary h2 { margin: 0; }
 .roles .col-name { font-weight: 600; word-break: break-word; }
 .roles .samples { color: var(--text-muted); font-size: .8rem; }
 .roles select {
-  width: 100%; min-height: 44px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-input);
+  width: 100%; min-height: 44px; padding: 6px 10px; border: 1px solid var(--border-control); border-radius: var(--radius-input);
   background: var(--surface); font-size: .85rem;
 }
 .roles select:focus { outline: 2px solid var(--primary); outline-offset: 1px; border-color: var(--primary); }
@@ -294,7 +298,7 @@ details.fold > summary h2 { margin: 0; }
 /* ---------------------------------------------------------------- filtre + tab-uri */
 .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; }
 .controls-label { font-size: .85rem; color: var(--text-muted); font-weight: 500; }
-.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--border-control); border-radius: 999px; padding: 3px; }
 .seg button { min-height: 44px; min-width: 56px; padding: 6px 14px; border: 0; border-radius: 999px; background: transparent; font-weight: 600; font-size: .85rem; cursor: pointer; color: var(--text-2); }
 .seg button[aria-pressed="true"] { background: var(--gradient); color: #fff; box-shadow: var(--shadow-btn); }
 
@@ -302,7 +306,7 @@ details.fold > summary h2 { margin: 0; }
 @media (min-width: 720px) { .tabs { grid-template-columns: repeat(3, 1fr); } }
 .tab {
   display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 8px 14px;
-  border-radius: 14px; border: 1px solid var(--border); background: var(--surface); text-align: left; line-height: 1.25;
+  border-radius: 14px; border: 1px solid var(--border-control); background: var(--surface); text-align: left; line-height: 1.25;
   font-weight: 600; font-size: .88rem; color: var(--text-2); cursor: pointer;
   transition: background .2s ease-out, border-color .2s ease-out, color .2s ease-out;
 }
@@ -395,7 +399,7 @@ table.data tbody tr:nth-child(even) td { background: var(--zebra); }
 .ask::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--gradient); }
 .ask-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .ask-form input {
-  flex: 1 1 260px; min-height: 48px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-input);
+  flex: 1 1 260px; min-height: 48px; padding: 10px 14px; border: 1px solid var(--border-control); border-radius: var(--radius-input);
   background: var(--surface); font-size: 1rem;
 }
 .ask-form input:focus { outline: 2px solid var(--primary); outline-offset: 1px; border-color: var(--primary); }
@@ -447,7 +451,7 @@ footer .container { display: flex; flex-wrap: wrap; justify-content: space-betwe
 @media (min-width: 640px) { .pv-controls { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .pv-field { display: grid; gap: 4px; font-size: .8rem; font-weight: 600; color: var(--text-muted); }
 .pv-field select {
-  width: 100%; min-height: 44px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-input);
+  width: 100%; min-height: 44px; padding: 6px 10px; border: 1px solid var(--border-control); border-radius: var(--radius-input);
   background: var(--surface); font-size: .9rem; color: var(--text); font-weight: 500;
 }
 .pv-field select:focus { outline: 2px solid var(--primary); outline-offset: 1px; border-color: var(--primary); }
