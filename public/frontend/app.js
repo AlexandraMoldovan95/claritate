@@ -1286,6 +1286,13 @@
     catch { label.textContent = url; }
     setTimeout(() => { label.textContent = "Copiază linkul"; }, 2500);
   });
+  // „Înapoi sus”: derulează pagina, fără să schimbe adresa (un link #top ar declanșa popstate de mai jos
+  // și ar reîncărca dashboard-ul); focusul trece pe logo, ca tastatura să continue de sus.
+  $("#toTop").addEventListener("click", () => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    $(".brand").focus({ preventScroll: true });
+  });
   window.addEventListener("popstate", () => {
     const c = location.pathname.match(/^\/c\/([a-z0-9]+)\/([a-z0-9]+)/);
     if (c) return void loadCompare(c[1], c[2], false);
