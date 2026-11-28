@@ -433,11 +433,9 @@ table.data tbody tr:nth-child(even) td { background: var(--zebra); }
 .tooltip .tt-label { color: var(--tooltip-muted); }
 
 /* ---------------------------------------------------------------- footer */
-/* Subsolul: numele și licența, ca la celelalte aplicații din portofoliu, plus „Înapoi sus”
-   (un dashboard are 2-4 ecrane de derulat). E buton, nu link #top: un link ar schimba adresa,
-   iar popstate din app.js ar reîncărca dashboard-ul. */
-footer { border-top: 1px solid var(--border); padding: 20px 0 36px; color: var(--text-muted); font-size: .85rem; }
-footer .container { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+/* Subsolul: numele și licența, centrate, ca la celelalte aplicații din portofoliu. */
+footer { border-top: 1px solid var(--border); padding: 24px 0 40px; color: var(--text-muted); font-size: .85rem; }
+footer .container { text-align: center; }
 
 [hidden] { display: none !important; }
 
